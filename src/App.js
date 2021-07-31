@@ -83,13 +83,22 @@ const Styles = styled.div`
 
 const cellConfig = {
   start_time: {
-    regex: "^\\d*\\.?\\d+$",
+    type: "number",
+    min_value_inclusive: 0,
   },
   pitch: {
-    regex: "\\d+",
+    type: "integer",
+    min_value_inclusive: 0,
+    max_value_inclusive: 127,
   },
   velocity: {
-    regex: "\\d+",
+    type: "integer",
+    min_value_inclusive: 0,
+    max_value_inclusive: 127,
+  },
+  duration: {
+    type: "number",
+    min_value_exclusive: 0,
   },
   note_id: {
     read_only: true,
@@ -113,7 +122,27 @@ const EditableCell = ({
   const onBlur = () => {
     const c = cellConfig[id];
     if (c.read_only) return;
-    updateMyData(index, id, value);
+
+    let v = c.type === "integer" ? parseInt(value) : Number(value);
+    if (
+      isNaN(v) ||
+      (c.min_value_exclusive !== undefined && v <= c.min_value_exclusive)
+    ) {
+      setValue(initialValue);
+      return;
+    }
+
+    v =
+      c.min_value_inclusive !== undefined && v < c.min_value_inclusive
+        ? c.min_value_inclusive
+        : v;
+    v =
+      c.max_value_inclusive !== undefined && v > c.max_value_inclusive
+        ? c.max_value_inclusive
+        : v;
+
+    setValue(v);
+    updateMyData(index, id, v);
   };
 
   // If the initialValue is changed external, sync it up with our state
