@@ -81,6 +81,21 @@ const Styles = styled.div`
   }
 `;
 
+const cellConfig = {
+  start_time: {
+    regex: "^\\d*\\.?\\d+$",
+  },
+  pitch: {
+    regex: "\\d+",
+  },
+  velocity: {
+    regex: "\\d+",
+  },
+  note_id: {
+    read_only: true,
+  },
+};
+
 const EditableCell = ({
   value: initialValue,
   row: { index },
@@ -91,11 +106,13 @@ const EditableCell = ({
   const [value, setValue] = React.useState(initialValue);
 
   const onChange = (e) => {
-    setValue(e.target.value);
+    if (!cellConfig[id].read_only) setValue(e.target.value);
   };
 
   // We'll only update the external data when the input is blurred
   const onBlur = () => {
+    const c = cellConfig[id];
+    if (c.read_only) return;
     updateMyData(index, id, value);
   };
 
@@ -287,36 +304,6 @@ function Content() {
       <ReactQueryDevtools initialIsOpen />
     </div>
   );
-
-  // if (!data)
-  //   return (
-  //     <div>
-  //       <p>React query status: {status}</p>
-  //       <button onClick={(e) => refetch({ cancelRefresh: true })}>Fetch</button>
-  //     </div>
-  //   );
-  // return (
-  //   <div>
-  //     <h1>{data.live_set.view.selected_track.name}</h1>
-  //     <h2>{data.live_set.view.detail_clip.name}</h2>
-  //     <div>
-  //       <p>React query status: {status}</p>
-  //       {isFetching ? (
-  //         "Updating..."
-  //       ) : (
-  //         <button onClick={(e) => refetch({ cancelRefresh: true })}>
-  //           Refetch
-  //         </button>
-  //       )}
-  //     </div>
-  //     <Styles>
-  //       <Table columns={columns} data={data.live_set.view.detail_clip.notes} />
-  //     </Styles>
-
-  //     <pre>{JSON.stringify(data, null, 2)}</pre>
-  //     <ReactQueryDevtools initialIsOpen />
-  //   </div>
-  // );
 }
 
 function App() {
