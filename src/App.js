@@ -110,21 +110,31 @@ const Styles = styled.div`
 const cellConfig = {
   start_time: {
     type: "number",
-    min_value_inclusive: 0,
+    min_value: 0,
   },
   pitch: {
     type: "integer",
-    min_value_inclusive: 0,
-    max_value_inclusive: 127,
+    min_value: 0,
+    max_value: 127,
   },
   velocity: {
-    type: "integer",
-    min_value_inclusive: 0,
-    max_value_inclusive: 127,
+    type: "number",
+    min_value: 0,
+    max_value: 127,
   },
   duration: {
     type: "number",
-    // min_value_exclusive: 0,
+    min_value: 0,
+  },
+  probability: {
+    type: "number",
+    min_value: 0,
+    max_value: 1,
+  },
+  velocity_deviation: {
+    type: "number",
+    min_value: -127,
+    max_value: 127,
   },
   note_id: {
     read_only: true,
@@ -150,22 +160,13 @@ const EditableCell = ({
     if (c.read_only) return;
 
     let v = c.type === "integer" ? parseInt(value) : Number(value);
-    if (
-      isNaN(v) ||
-      (c.min_value_exclusive !== undefined && v <= c.min_value_exclusive)
-    ) {
+    if (isNaN(v)) {
       setValue(initialValue);
       return;
     }
 
-    v =
-      c.min_value_inclusive !== undefined && v < c.min_value_inclusive
-        ? c.min_value_inclusive
-        : v;
-    v =
-      c.max_value_inclusive !== undefined && v > c.max_value_inclusive
-        ? c.max_value_inclusive
-        : v;
+    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
+    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
 
     setValue(v);
     updateMyData(index, id, v);
@@ -262,6 +263,14 @@ const columns = [
     accessor: "duration",
   },
   {
+    Header: "Probability",
+    accessor: "probability",
+  },
+  {
+    Header: "Vel Dev",
+    accessor: "velocity_deviation",
+  },
+  {
     Header: "Note Id",
     accessor: "note_id",
   },
@@ -344,10 +353,9 @@ function Content() {
                 {mutation.isError ? (
                   <div>An error occurred: {mutation.error.message}</div>
                 ) : null}
-                {mutation.isSuccess ? <div>Todo added!</div> : null}
+                {mutation.isSuccess ? <div>Mutated!</div> : null}
                 <button
                   onClick={() => {
-                    console.log(data);
                     mutation.mutate({
                       id: data.live_set.view.detail_clip.id,
                       notesDictionary: {
