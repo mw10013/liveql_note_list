@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 // import ReactDOM from "react-dom";
-import { QueryClient, QueryClientProvider, useQuery } from "react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+  useMutation,
+} from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { request, gql } from "graphql-request";
 import { useTable, usePagination } from "react-table";
@@ -37,6 +42,27 @@ const query = gql`
             note_id
           }
         }
+      }
+    }
+  }
+`;
+
+const mutateql = gql`
+  mutation ApplyNoteModifications(
+    $id: Int!
+    $notesDictionary: NotesDictionaryInput!
+  ) {
+    clip_apply_note_modifications(id: $id, notes_dictionary: $notesDictionary) {
+      id
+      name
+      notes {
+        start_time
+        pitch
+        velocity
+        duration
+        probability
+        velocity_deviation
+        note_id
       }
     }
   }
@@ -98,7 +124,7 @@ const cellConfig = {
   },
   duration: {
     type: "number",
-    min_value_exclusive: 0,
+    // min_value_exclusive: 0,
   },
   note_id: {
     read_only: true,
@@ -249,16 +275,6 @@ function Content() {
     // We also turn on the flag to not reset the page
     setSkipPageReset(true);
     setData((old) => {
-      console.log(old);
-      // old.map((row, index) => {
-      //   if (index === rowIndex) {
-      //     return {
-      //       ...old[rowIndex],
-      //       [columnId]: value,
-      //     };
-      //   }
-      //   return row;
-      // });
       return {
         ...old,
         live_set: {
@@ -305,6 +321,11 @@ function Content() {
   useEffect(() => {
     if (queryData) setData(queryData);
   }, [queryData]);
+
+  const mutation = useMutation((variables) =>
+    request("http://localhost:4000/", mutateql, variables)
+  );
+
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
   return (
@@ -315,6 +336,31 @@ function Content() {
         <div>
           <h1>{data.live_set.view.selected_track.name}</h1>
           <h2>{data.live_set.view.detail_clip.name}</h2>
+          <div>
+            {mutation.isLoading ? (
+              "Mutating..."
+            ) : (
+              <>
+                {mutation.isError ? (
+                  <div>An error occurred: {mutation.error.message}</div>
+                ) : null}
+                {mutation.isSuccess ? <div>Todo added!</div> : null}
+                <button
+                  onClick={() => {
+                    console.log(data);
+                    mutation.mutate({
+                      id: data.live_set.view.detail_clip.id,
+                      notesDictionary: {
+                        notes: data.live_set.view.detail_clip.notes,
+                      },
+                    });
+                  }}
+                >
+                  Mutate
+                </button>
+              </>
+            )}
+          </div>
           <Styles>
             <Table
               columns={columns}
