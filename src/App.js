@@ -48,11 +48,17 @@ const query = gql`
 `;
 
 const mutateql = gql`
-  mutation ApplyNoteModifications(
-    $id: Int!
-    $notesDictionary: NotesDictionaryInput!
-  ) {
-    clip_apply_note_modifications(id: $id, notes_dictionary: $notesDictionary) {
+  mutation ReplaceAllNotes($id: Int!, $notesDictionary: NotesDictionaryInput!) {
+    clip_remove_notes_extended(
+      id: $id
+      from_pitch: 0
+      pitch_span: 127
+      from_time: 0
+      time_span: 1000000
+    ) {
+      id
+    }
+    clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
       id
       name
       notes {
@@ -67,6 +73,26 @@ const mutateql = gql`
     }
   }
 `;
+// const mutateql = gql`
+//   mutation ApplyNoteModifications(
+//     $id: Int!
+//     $notesDictionary: NotesDictionaryInput!
+//   ) {
+//     clip_apply_note_modifications(id: $id, notes_dictionary: $notesDictionary) {
+//       id
+//       name
+//       notes {
+//         start_time
+//         pitch
+//         velocity
+//         duration
+//         probability
+//         velocity_deviation
+//         note_id
+//       }
+//     }
+//   }
+// `;
 
 const queryClient = new QueryClient();
 
@@ -385,7 +411,9 @@ function Content() {
                     mutation.mutate({
                       id: data.live_set.view.detail_clip.id,
                       notesDictionary: {
-                        notes: data.live_set.view.detail_clip.notes,
+                        notes: data.live_set.view.detail_clip.notes.map(
+                          ({ note_id, ...n }) => n
+                        ),
                       },
                     });
                   }}
