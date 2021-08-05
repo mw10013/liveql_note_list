@@ -47,6 +47,7 @@ const query = gql`
   }
 `;
 
+// HACK: time_span is magic constant.
 const mutateql = gql`
   mutation ReplaceAllNotes($id: Int!, $notesDictionary: NotesDictionaryInput!) {
     clip_remove_notes_extended(
@@ -73,26 +74,6 @@ const mutateql = gql`
     }
   }
 `;
-// const mutateql = gql`
-//   mutation ApplyNoteModifications(
-//     $id: Int!
-//     $notesDictionary: NotesDictionaryInput!
-//   ) {
-//     clip_apply_note_modifications(id: $id, notes_dictionary: $notesDictionary) {
-//       id
-//       name
-//       notes {
-//         start_time
-//         pitch
-//         velocity
-//         duration
-//         probability
-//         velocity_deviation
-//         note_id
-//       }
-//     }
-//   }
-// `;
 
 const queryClient = new QueryClient();
 
@@ -231,6 +212,7 @@ function Table({ columns, data, updateMyData, skipPageReset }) {
     {
       columns,
       data,
+      initialState: { pageSize: 1000 }, // HACK: handle > 1000 items.
       defaultColumn,
       // use the skipPageReset option to disable page resetting temporarily
       autoResetPage: !skipPageReset,
