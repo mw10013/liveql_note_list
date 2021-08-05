@@ -334,6 +334,32 @@ function Content() {
   const mutation = useMutation((variables) =>
     request("http://localhost:4000/", mutateql, variables)
   );
+  const mutatationStart = useMutation((variables) =>
+    request(
+      "http://localhost:4000/",
+      gql`
+        mutation StartSong($id: Int!) {
+          song_start_playing(id: $id) {
+            id
+          }
+        }
+      `,
+      variables
+    )
+  );
+  const mutatationStop = useMutation((variables) =>
+    request(
+      "http://localhost:4000/",
+      gql`
+        mutation StopSong($id: Int!) {
+          song_stop_playing(id: $id) {
+            id
+          }
+        }
+      `,
+      variables
+    )
+  );
 
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
@@ -365,6 +391,20 @@ function Content() {
                   }}
                 >
                   Mutate
+                </button>
+                <button
+                  onClick={() => {
+                    mutatationStart.mutate({ id: data.live_set.id });
+                  }}
+                >
+                  Start
+                </button>
+                <button
+                  onClick={() => {
+                    mutatationStop.mutate({ id: data.live_set.id });
+                  }}
+                >
+                  Stop
                 </button>
               </>
             )}
