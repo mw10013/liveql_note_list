@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { request, gql } from "graphql-request";
 import { useTable, usePagination } from "react-table";
 import styled from "styled-components";
+import update from "immutability-helper";
 // import logo from "./logo.svg";
 import "./App.css";
 
@@ -289,30 +290,17 @@ function Content() {
   const [skipPageReset, setSkipPageReset] = React.useState(false);
 
   const updateMyData = (rowIndex, columnId, value) => {
-    // We also turn on the flag to not reset the page
-    setSkipPageReset(true);
+    setSkipPageReset(true); // Turn on flag to not reset page
     setData((old) => {
-      return {
-        ...old,
+      return update(old, {
         live_set: {
-          ...old.live_set,
           view: {
-            ...old.live_set.view,
             detail_clip: {
-              ...old.live_set.view.detail_clip,
-              notes: old.live_set.view.detail_clip.notes.map((row, index) => {
-                if (index === rowIndex) {
-                  return {
-                    ...row,
-                    [columnId]: value,
-                  };
-                }
-                return row;
-              }),
+              notes: { [rowIndex]: { [columnId]: { $set: value } } },
             },
           },
         },
-      };
+      });
     });
   };
 
