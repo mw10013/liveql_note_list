@@ -434,7 +434,7 @@ function Content() {
           <h2>No clip selected.</h2>
         </div>
       )}
-      <ReactQueryDevtools initialIsOpen />
+      {/* <ReactQueryDevtools initialIsOpen /> */}
     </div>
   );
 }
