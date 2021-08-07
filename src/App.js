@@ -447,6 +447,19 @@ function Content() {
       variables
     )
   );
+  const mutationFire = useMutation((variables) =>
+    request(
+      "http://localhost:4000/",
+      gql`
+        mutation Fire($id: Int!) {
+          clip_fire(id: $id) {
+            id
+          }
+        }
+      `,
+      variables
+    )
+  );
 
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
@@ -480,6 +493,15 @@ function Content() {
                   }}
                 >
                   Mutate
+                </button>
+                <button
+                  onClick={() =>
+                    mutationFire.mutate({
+                      id: data.live_set.view.detail_clip.id,
+                    })
+                  }
+                >
+                  Fire
                 </button>
                 <button
                   onClick={() => {
