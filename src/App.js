@@ -210,7 +210,7 @@ const defaultColumn = {
   Cell: EditableCell,
 };
 
-function Table({ columns, data, updateMyData, skipPageReset }) {
+function Table({ columns, data, applyToNotes, updateMyData, skipPageReset }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -245,7 +245,6 @@ function Table({ columns, data, updateMyData, skipPageReset }) {
     useRowSelect, // After pagination.
     (hooks) => {
       hooks.visibleColumns.push((columns) => {
-        console.log("visibleColumn hook called");
         return [
           // Let's make a column for selection
           {
@@ -300,6 +299,20 @@ function Table({ columns, data, updateMyData, skipPageReset }) {
           })}
         </tbody>
       </table>
+      <div>
+        <button
+          disabled={Object.keys(selectedRowIds).length === 0}
+          onClick={() => {
+            applyToNotes((notes) => {
+              return notes.filter(
+                (el, index) => !selectedRowIds.hasOwnProperty(index)
+              );
+            });
+          }}
+        >
+          Delete
+        </button>
+      </div>
       <pre>
         <code>
           {JSON.stringify(
@@ -361,6 +374,20 @@ function Content() {
           view: {
             detail_clip: {
               notes: { [rowIndex]: { [columnId]: { $set: value } } },
+            },
+          },
+        },
+      });
+    });
+  };
+
+  const applyToNotes = (fn) => {
+    setData((old) => {
+      return update(old, {
+        live_set: {
+          view: {
+            detail_clip: {
+              notes: { $apply: fn },
             },
           },
         },
@@ -475,6 +502,7 @@ function Content() {
             <Table
               columns={columns}
               data={data.live_set.view.detail_clip.notes}
+              applyToNotes={applyToNotes}
               updateMyData={updateMyData}
               skipPageReset={skipPageReset}
             />
