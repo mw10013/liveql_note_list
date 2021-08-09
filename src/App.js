@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   QueryClient,
   QueryClientProvider,
+  useQueryClient,
   useQuery,
   useMutation,
 } from "react-query";
@@ -450,6 +451,7 @@ function Content() {
     setSkipPageReset(false);
   }, [data]);
 
+  const queryClient = useQueryClient();
   const {
     isLoading,
     error,
@@ -463,7 +465,10 @@ function Content() {
     { refetchOnWindowFocus: false, enabled: false }
   );
   useEffect(() => {
-    if (queryData) setData(queryData);
+    if (queryData) {
+      console.log("query data updated");
+      setData(queryData);
+    }
   }, [queryData]);
 
   const mutation = useMutation((variables) =>
@@ -514,7 +519,14 @@ function Content() {
   return (
     <div>
       <p>React query status: {status}</p>
-      <button onClick={(e) => refetch({ cancelRefresh: true })}>Fetch</button>
+      <button
+        onClick={(e) => {
+          queryClient.setQueryData("selectedTrackDetailClip", null);
+          refetch({ cancelRefresh: true });
+        }}
+      >
+        Fetch
+      </button>
       {data && data.live_set.view.detail_clip ? (
         <div>
           <h1>{data.live_set.view.selected_track.name}</h1>
@@ -586,7 +598,7 @@ function Content() {
           <h2>No clip selected.</h2>
         </div>
       )}
-      {/* <ReactQueryDevtools initialIsOpen /> */}
+      <ReactQueryDevtools initialIsOpen />
     </div>
   );
 }
