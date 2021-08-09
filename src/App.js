@@ -40,6 +40,8 @@ const query = gql`
             duration
             probability
             velocity_deviation
+            release_velocity
+            mute
             note_id
           }
         }
@@ -362,6 +364,38 @@ const columns = [
   },
 ];
 
+const DEFAULT_NOTE = {
+  start_time: 0,
+  pitch: 64,
+  velocity: 100,
+  duration: 1,
+  mute: 0,
+  probability: 1,
+  velocity_deviation: 0,
+  release_velocity: 64,
+};
+
+function InputSection({ insertNotes }) {
+  return (
+    <div>
+      Input Section
+      <button
+        onClick={() => {
+          insertNotes(
+            [{ start_time: 0, pitch: 48, velocity: 100, duration: 1 }].map(
+              (el) => {
+                return { ...DEFAULT_NOTE, ...el };
+              }
+            )
+          );
+        }}
+      >
+        Insert
+      </button>
+    </div>
+  );
+}
+
 function Content() {
   const [data, setData] = useState();
   const [skipPageReset, setSkipPageReset] = React.useState(false);
@@ -388,6 +422,20 @@ function Content() {
           view: {
             detail_clip: {
               notes: { $apply: fn },
+            },
+          },
+        },
+      });
+    });
+  };
+
+  const insertNotes = (notes) => {
+    setData((old) => {
+      return update(old, {
+        live_set: {
+          view: {
+            detail_clip: {
+              notes: { $apply: (arr) => [...notes, ...arr] },
             },
           },
         },
@@ -529,6 +577,7 @@ function Content() {
               skipPageReset={skipPageReset}
             />
           </Styles>
+          <InputSection insertNotes={insertNotes} />
 
           <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
