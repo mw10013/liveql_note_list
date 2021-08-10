@@ -12,47 +12,53 @@ import { request, gql } from "graphql-request";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
-// import logo from "./logo.svg";
 import "./App.css";
 
+const queryClient = new QueryClient();
 const liveqlEndpoint = "http://localhost:4000/";
 
-const query = gql`
-  query SelectedTrackDetailClip {
-    live_set {
-      id
-      view {
-        selected_track {
+function querySelectedTrackDetailClip() {
+  return request(
+    liveqlEndpoint,
+    gql`
+      query SelectedTrackDetailClip {
+        live_set {
           id
-          name
-        }
-        detail_clip {
-          id
-          name
-          start_time
-          end_time
-          length
-          signature_numerator
-          signature_denominator
-          is_midi_clip
-          is_arrangement_clip
-          notes {
-            start_time
-            pitch
-            velocity
-            duration
-            probability
-            velocity_deviation
-            release_velocity
-            mute
-            note_id
+          view {
+            selected_track {
+              id
+              name
+            }
+            detail_clip {
+              id
+              name
+              start_time
+              end_time
+              length
+              signature_numerator
+              signature_denominator
+              is_midi_clip
+              is_arrangement_clip
+              notes {
+                start_time
+                pitch
+                velocity
+                duration
+                probability
+                velocity_deviation
+                release_velocity
+                mute
+                note_id
+              }
+            }
           }
         }
       }
-    }
-  }
-`;
+    `
+  );
+}
 
+// HACK: time_span is magic constant.
 function mutateReplaceAllNotes(variables) {
   return request(
     liveqlEndpoint,
@@ -88,34 +94,6 @@ function mutateReplaceAllNotes(variables) {
     variables
   );
 }
-
-// HACK: time_span is magic constant.
-const mutateql = gql`
-  mutation ReplaceAllNotes($id: Int!, $notesDictionary: NotesDictionaryInput!) {
-    clip_remove_notes_extended(
-      id: $id
-      from_pitch: 0
-      pitch_span: 127
-      from_time: 0
-      time_span: 1000000
-    ) {
-      id
-    }
-    clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
-      id
-      name
-      notes {
-        start_time
-        pitch
-        velocity
-        duration
-        probability
-        velocity_deviation
-        note_id
-      }
-    }
-  }
-`;
 
 function mutateStart(variables) {
   return request(
@@ -158,8 +136,6 @@ function mutateFire(variables) {
     variables
   );
 }
-
-const queryClient = new QueryClient();
 
 const Styles = styled.div`
   padding: 1rem;
@@ -317,11 +293,6 @@ function Table({ columns, data, applyToNotes, updateNote, skipPageReset }) {
       defaultColumn,
       // use the skipPageReset option to disable page resetting temporarily
       autoResetPage: !skipPageReset,
-      // updateNote isn't part of the API, but
-      // anything we put into these options will
-      // automatically be available on the instance.
-      // That way we can call this function from our
-      // cell renderer!
       updateNote,
     },
     usePagination,
@@ -507,11 +478,10 @@ function Content() {
     data: queryData,
     status,
     refetch,
-  } = useQuery(
-    "selectedTrackDetailClip",
-    () => request("http://localhost:4000/", query),
-    { refetchOnWindowFocus: false, enabled: false }
-  );
+  } = useQuery("selectedTrackDetailClip", querySelectedTrackDetailClip, {
+    refetchOnWindowFocus: false,
+    enabled: false,
+  });
   useEffect(() => {
     if (queryData) {
       setData(queryData);
