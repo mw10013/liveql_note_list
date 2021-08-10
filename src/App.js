@@ -15,6 +15,8 @@ import update from "immutability-helper";
 // import logo from "./logo.svg";
 import "./App.css";
 
+const liveqlEndpoint = "http://localhost:4000/";
+
 const query = gql`
   query SelectedTrackDetailClip {
     live_set {
@@ -51,6 +53,42 @@ const query = gql`
   }
 `;
 
+function mutateReplaceAllNotes(variables) {
+  return request(
+    liveqlEndpoint,
+    gql`
+      mutation ReplaceAllNotes(
+        $id: Int!
+        $notesDictionary: NotesDictionaryInput!
+      ) {
+        clip_remove_notes_extended(
+          id: $id
+          from_pitch: 0
+          pitch_span: 127
+          from_time: 0
+          time_span: 1000000
+        ) {
+          id
+        }
+        clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
+          id
+          name
+          notes {
+            start_time
+            pitch
+            velocity
+            duration
+            probability
+            velocity_deviation
+            note_id
+          }
+        }
+      }
+    `,
+    variables
+  );
+}
+
 // HACK: time_span is magic constant.
 const mutateql = gql`
   mutation ReplaceAllNotes($id: Int!, $notesDictionary: NotesDictionaryInput!) {
@@ -78,6 +116,48 @@ const mutateql = gql`
     }
   }
 `;
+
+function mutateStart(variables) {
+  return request(
+    liveqlEndpoint,
+    gql`
+      mutation StartSong($id: Int!) {
+        song_start_playing(id: $id) {
+          id
+        }
+      }
+    `,
+    variables
+  );
+}
+
+function mutateStop(variables) {
+  return request(
+    liveqlEndpoint,
+    gql`
+      mutation StopSong($id: Int!) {
+        song_stop_playing(id: $id) {
+          id
+        }
+      }
+    `,
+    variables
+  );
+}
+
+function mutateFire(variables) {
+  return request(
+    liveqlEndpoint,
+    gql`
+      mutation Fire($id: Int!) {
+        clip_fire(id: $id) {
+          id
+        }
+      }
+    `,
+    variables
+  );
+}
 
 const queryClient = new QueryClient();
 
@@ -399,6 +479,7 @@ function InputSection({ insertNotes }) {
 
 function Content() {
   const [data, setData] = useState();
+  const [notes, setNotes] = useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
 
   const updateMyData = (rowIndex, columnId, value) => {
@@ -456,7 +537,6 @@ function Content() {
     isLoading,
     error,
     data: queryData,
-    isFetching,
     status,
     refetch,
   } = useQuery(
@@ -466,53 +546,17 @@ function Content() {
   );
   useEffect(() => {
     if (queryData) {
-      console.log("query data updated");
       setData(queryData);
+      if (queryData.live_set.view.detail_clip) {
+        setNotes(queryData.live_set.view.detail_clip.notes);
+      }
     }
   }, [queryData]);
 
-  const mutation = useMutation((variables) =>
-    request("http://localhost:4000/", mutateql, variables)
-  );
-  const mutatationStart = useMutation((variables) =>
-    request(
-      "http://localhost:4000/",
-      gql`
-        mutation StartSong($id: Int!) {
-          song_start_playing(id: $id) {
-            id
-          }
-        }
-      `,
-      variables
-    )
-  );
-  const mutatationStop = useMutation((variables) =>
-    request(
-      "http://localhost:4000/",
-      gql`
-        mutation StopSong($id: Int!) {
-          song_stop_playing(id: $id) {
-            id
-          }
-        }
-      `,
-      variables
-    )
-  );
-  const mutationFire = useMutation((variables) =>
-    request(
-      "http://localhost:4000/",
-      gql`
-        mutation Fire($id: Int!) {
-          clip_fire(id: $id) {
-            id
-          }
-        }
-      `,
-      variables
-    )
-  );
+  const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes);
+  const mutationFire = useMutation(mutateFire);
+  const mutatationStart = useMutation(mutateStart);
+  const mutatationStop = useMutation(mutateStop);
 
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
@@ -532,17 +576,21 @@ function Content() {
           <h1>{data.live_set.view.selected_track.name}</h1>
           <h2>{data.live_set.view.detail_clip.name}</h2>
           <div>
-            {mutation.isLoading ? (
-              "Mutating..."
+            {mutationReplaceAllNotes.isLoading ? (
+              "Replacing..."
             ) : (
               <>
-                {mutation.isError ? (
-                  <div>An error occurred: {mutation.error.message}</div>
+                {mutationReplaceAllNotes.isError ? (
+                  <div>
+                    An error occurred: {mutationReplaceAllNotes.error.message}
+                  </div>
                 ) : null}
-                {mutation.isSuccess ? <div>Mutated!</div> : null}
+                {mutationReplaceAllNotes.isSuccess ? (
+                  <div>All notes replaced.</div>
+                ) : null}
                 <button
                   onClick={() => {
-                    mutation.mutate({
+                    mutationReplaceAllNotes.mutate({
                       id: data.live_set.view.detail_clip.id,
                       notesDictionary: {
                         notes: data.live_set.view.detail_clip.notes.map(
@@ -552,7 +600,7 @@ function Content() {
                     });
                   }}
                 >
-                  Mutate
+                  Replace All Notes
                 </button>
                 <button
                   onClick={() =>
@@ -598,7 +646,7 @@ function Content() {
           <h2>No clip selected.</h2>
         </div>
       )}
-      <ReactQueryDevtools initialIsOpen />
+      {/* <ReactQueryDevtools initialIsOpen /> */}
     </div>
   );
 }
