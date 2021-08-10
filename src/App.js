@@ -453,6 +453,20 @@ function InputSection({ insertNotes }) {
   const [velocity, setVelocity] = useState(100);
   const [duration, setDuration] = useState(1);
   const [step, setStep] = useState(1);
+  const insert = () => {
+    insertNotes(
+      [{ start_time: insertTime, pitch, velocity, duration }].map((el) => {
+        return { ...DEFAULT_NOTE, ...el };
+      })
+    );
+  };
+  const stepFn = () => {
+    setInsertTime(insertTime + step);
+  };
+  const insertAndStep = () => {
+    insertNotes();
+    stepFn();
+  };
 
   return (
     <div>
@@ -481,19 +495,9 @@ function InputSection({ insertNotes }) {
         Step:{" "}
         <InputCell id="duration" initialValue={step} updateValue={setStep} />
       </div>
-      <button
-        onClick={() => {
-          insertNotes(
-            [{ start_time: 0, pitch: 48, velocity: 100, duration: 1 }].map(
-              (el) => {
-                return { ...DEFAULT_NOTE, ...el };
-              }
-            )
-          );
-        }}
-      >
-        Insert
-      </button>
+      <button onClick={insert}>Insert</button>
+      <button onClick={insertAndStep}>Insert And Step</button>
+      <button onClick={stepFn}>Step</button>
       <pre>
         {JSON.stringify(
           { insertTime, pitch, velocity, duration, step },
