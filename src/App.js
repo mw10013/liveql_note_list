@@ -427,10 +427,60 @@ const DEFAULT_NOTE = {
   release_velocity: 64,
 };
 
+const InputCell = ({ id, initialValue, updateValue }) => {
+  const [value, setValue] = useState(initialValue);
+  const onChange = (e) => setValue(e.target.value);
+  const onBlur = () => {
+    const c = cellConfig[id];
+    let v = c.type === "integer" ? parseInt(value) : Number(value);
+    if (isNaN(v)) {
+      setValue(initialValue);
+      return;
+    }
+
+    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
+    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
+
+    setValue(v);
+    updateValue(v);
+  };
+  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+};
+
 function InputSection({ insertNotes }) {
+  const [insertTime, setInsertTime] = useState(0);
+  const [pitch, setPitch] = useState(64);
+  const [velocity, setVelocity] = useState(100);
+  const [duration, setDuration] = useState(1);
+  const [step, setStep] = useState(1);
+
   return (
     <div>
       Input Section
+      <div>
+        Insert Time:{" "}
+        <InputCell
+          id="start_time"
+          initialValue={insertTime}
+          updateValue={setInsertTime}
+        />
+        Pitch:{" "}
+        <InputCell id="pitch" initialValue={pitch} updateValue={setPitch} />
+        Velocity:{" "}
+        <InputCell
+          id="velocity"
+          initialValue={velocity}
+          updateValue={setVelocity}
+        />
+        Duration:{" "}
+        <InputCell
+          id="duration"
+          initialValue={duration}
+          updateValue={setDuration}
+        />
+        Step:{" "}
+        <InputCell id="duration" initialValue={step} updateValue={setStep} />
+      </div>
       <button
         onClick={() => {
           insertNotes(
@@ -444,6 +494,13 @@ function InputSection({ insertNotes }) {
       >
         Insert
       </button>
+      <pre>
+        {JSON.stringify(
+          { insertTime, pitch, velocity, duration, step },
+          null,
+          2
+        )}
+      </pre>
     </div>
   );
 }
