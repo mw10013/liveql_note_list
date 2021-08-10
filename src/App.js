@@ -253,7 +253,7 @@ const EditableCell = ({
   value: initialValue,
   row: { index },
   column: { id },
-  updateMyData, // This is a custom function that we supplied to our table instance
+  updateNote,
 }) => {
   // We need to keep and update the state of the cell normally
   const [value, setValue] = React.useState(initialValue);
@@ -277,7 +277,7 @@ const EditableCell = ({
     v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
 
     setValue(v);
-    updateMyData(index, id, v);
+    updateNote(index, id, v);
   };
 
   // If the initialValue is changed external, sync it up with our state
@@ -293,7 +293,7 @@ const defaultColumn = {
   Cell: EditableCell,
 };
 
-function Table({ columns, data, applyToNotes, updateMyData, skipPageReset }) {
+function Table({ columns, data, applyToNotes, updateNote, skipPageReset }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -317,12 +317,12 @@ function Table({ columns, data, applyToNotes, updateMyData, skipPageReset }) {
       defaultColumn,
       // use the skipPageReset option to disable page resetting temporarily
       autoResetPage: !skipPageReset,
-      // updateMyData isn't part of the API, but
+      // updateNote isn't part of the API, but
       // anything we put into these options will
       // automatically be available on the instance.
       // That way we can call this function from our
       // cell renderer!
-      updateMyData,
+      updateNote,
     },
     usePagination,
     useRowSelect, // After pagination.
@@ -482,55 +482,23 @@ function Content() {
   const [notes, setNotes] = useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
 
-  const updateMyData = (rowIndex, columnId, value) => {
+  const updateNote = (rowIndex, columnId, value) => {
     setSkipPageReset(true); // Turn on flag to not reset page
-    setData((old) => {
-      return update(old, {
-        live_set: {
-          view: {
-            detail_clip: {
-              notes: { [rowIndex]: { [columnId]: { $set: value } } },
-            },
-          },
-        },
-      });
-    });
+    setNotes((old) =>
+      update(old, { [rowIndex]: { [columnId]: { $set: value } } })
+    );
   };
 
-  const applyToNotes = (fn) => {
-    setData((old) => {
-      return update(old, {
-        live_set: {
-          view: {
-            detail_clip: {
-              notes: { $apply: fn },
-            },
-          },
-        },
-      });
-    });
-  };
-
-  const insertNotes = (notes) => {
-    setData((old) => {
-      return update(old, {
-        live_set: {
-          view: {
-            detail_clip: {
-              notes: { $apply: (arr) => [...notes, ...arr] },
-            },
-          },
-        },
-      });
-    });
-  };
+  const applyToNotes = (fn) => setNotes((old) => update(old, { $apply: fn }));
+  const insertNotes = (notes) =>
+    setNotes((old) => update(old, { $apply: (arr) => [...notes, ...arr] }));
 
   // After data chagnes, we turn the flag back off
   // so that if data actually changes when we're not
   // editing it, the page is reset
   React.useEffect(() => {
     setSkipPageReset(false);
-  }, [data]);
+  }, [notes]);
 
   const queryClient = useQueryClient();
   const {
@@ -593,9 +561,7 @@ function Content() {
                     mutationReplaceAllNotes.mutate({
                       id: data.live_set.view.detail_clip.id,
                       notesDictionary: {
-                        notes: data.live_set.view.detail_clip.notes.map(
-                          ({ note_id, ...n }) => n
-                        ),
+                        notes: notes.map(({ note_id, ...n }) => n),
                       },
                     });
                   }}
@@ -631,14 +597,15 @@ function Content() {
           <Styles>
             <Table
               columns={columns}
-              data={data.live_set.view.detail_clip.notes}
+              data={notes}
               applyToNotes={applyToNotes}
-              updateMyData={updateMyData}
+              updateNote={updateNote}
               skipPageReset={skipPageReset}
             />
           </Styles>
           <InputSection insertNotes={insertNotes} />
 
+          <pre>{JSON.stringify(notes, null, 2)}</pre>
           <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
       ) : (
