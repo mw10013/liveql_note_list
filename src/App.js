@@ -473,10 +473,15 @@ function InputSection({ insertNotes }) {
       Input Section
       <div>
         Insert Time:{" "}
-        <InputCell
-          id="start_time"
-          initialValue={insertTime}
-          updateValue={setInsertTime}
+        <input
+          value={insertTime}
+          onChange={(e) => setInsertTime(e.target.value)}
+          onBlur={() => {
+            let v = Number(insertTime);
+            v = isNaN(v) ? 0 : v;
+            v = v < 0 ? 0 : v;
+            setInsertTime(v);
+          }}
         />
         Pitch:{" "}
         <InputCell id="pitch" initialValue={pitch} updateValue={setPitch} />
