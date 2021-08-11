@@ -425,6 +425,7 @@ const DEFAULT_NOTE = {
   probability: 1,
   velocity_deviation: 0,
   release_velocity: 64,
+  note_id: 0, // HACK: undefined may show stale values in react table
 };
 
 const InputCell = ({ id, initialValue, updateValue }) => {
@@ -514,6 +515,13 @@ function InputSection({ insertNotes }) {
   );
 }
 
+function compareNotes(a, b) {
+  // start_time ascending, pitch ascending
+  if (a.start_time < b.start_time) return -1;
+  if (a.start_time > b.start_time) return 1;
+  return a.pitch - b.pitch;
+}
+
 function Content() {
   const [data, setData] = useState();
   const [notes, setNotes] = useState([]);
@@ -521,14 +529,22 @@ function Content() {
 
   const updateNote = (rowIndex, columnId, value) => {
     setSkipPageReset(true); // Turn on flag to not reset page
-    setNotes((old) =>
-      update(old, { [rowIndex]: { [columnId]: { $set: value } } })
-    );
+    setNotes((old) => {
+      let notes = update(old, { [rowIndex]: { [columnId]: { $set: value } } });
+      if (columnId === "start_time" || columnId === "pitch") {
+        notes.sort(compareNotes);
+      }
+      return notes;
+    });
   };
 
-  const applyToNotes = (fn) => setNotes((old) => update(old, { $apply: fn }));
+  const applyToNotes = (fn) =>
+    setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
+
   const insertNotes = (notes) =>
-    setNotes((old) => update(old, { $apply: (arr) => [...notes, ...arr] }));
+    setNotes((old) =>
+      update(old, { $apply: (arr) => [...notes, ...arr] }).sort(compareNotes)
+    );
 
   // After data chagnes, we turn the flag back off
   // so that if data actually changes when we're not
