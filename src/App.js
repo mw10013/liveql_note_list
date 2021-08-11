@@ -253,7 +253,7 @@ const EditableCell = ({
     v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
 
     setValue(v);
-git     updateNote(index, id, v);
+    updateNote(index, id, v);
   };
 
   // If the initialValue is changed external, sync it up with our state
