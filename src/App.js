@@ -256,12 +256,21 @@ const EditableCell = ({
     updateNote(index, id, v);
   };
 
+  const onFocus = (e) => e.target.select();
+
   // If the initialValue is changed external, sync it up with our state
   React.useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
 
-  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+  return (
+    <input
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      onFocus={onFocus}
+    />
+  );
 };
 
 // Set our editable cell renderer as the default Cell renderer
@@ -445,7 +454,8 @@ const InputCell = ({ id, initialValue, updateValue }) => {
     setValue(v);
     updateValue(v);
   };
-  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+
+  return <input value={value} onChange={onChange} />;
 };
 
 function InputSection({ insertNotes }) {
