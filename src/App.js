@@ -220,9 +220,6 @@ const cellConfig = {
     min_value: -127,
     max_value: 127,
   },
-  note_id: {
-    read_only: true,
-  },
 };
 
 const EditableCell = ({
@@ -241,8 +238,6 @@ const EditableCell = ({
   // We'll only update the external data when the input is blurred
   const onBlur = () => {
     const c = cellConfig[id];
-    if (c.read_only) return;
-
     let v = c.type === "integer" ? parseInt(value) : Number(value);
     if (isNaN(v)) {
       setValue(initialValue);
@@ -422,6 +417,7 @@ const columns = [
   {
     Header: "Note Id",
     accessor: "note_id",
+    Cell: ({ value }) => String(value),
   },
 ];
 
@@ -455,7 +451,16 @@ const InputCell = ({ id, initialValue, updateValue }) => {
     updateValue(v);
   };
 
-  return <input value={value} onChange={onChange} />;
+  const onFocus = (e) => e.target.select();
+
+  return (
+    <input
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      onFocus={onFocus}
+    />
+  );
 };
 
 function InputSection({ insertNotes }) {
@@ -493,6 +498,7 @@ function InputSection({ insertNotes }) {
             v = v < 0 ? 0 : v;
             setInsertTime(v);
           }}
+          onFocus={(e) => e.target.select()}
         />
         Pitch:{" "}
         <InputCell id="pitch" initialValue={pitch} updateValue={setPitch} />
