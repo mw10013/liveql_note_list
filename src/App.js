@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 // import ReactDOM from "react-dom";
 import {
   QueryClient,
@@ -463,22 +463,58 @@ const InputCell = ({ id, initialValue, updateValue }) => {
   );
 };
 
+const Input = ({ label, type, value, dispatch, defaultValue }) => {
+  const onBlur = () => {
+    const c = cellConfig[type];
+    let v = c.type === "integer" ? parseInt(value) : Number(value);
+    if (isNaN(v)) {
+      dispatch({ type, value: defaultValue });
+      return;
+    }
+
+    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
+    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
+
+    dispatch({ type, value: v });
+  };
+
+  return (
+    <>
+      {label}:
+      <input
+        value={value}
+        onChange={(e) => dispatch({ type, value: e.target.value })}
+        onBlur={onBlur}
+        onFocus={(e) => e.target.select()}
+      />
+    </>
+  );
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "start_time":
+    case "pitch":
+    case "velocity":
+    case "duration":
+      return { ...state, [action.type]: action.value };
+    case "step":
+      return { ...state, start_time: state.start_time + action.step };
+    default:
+      throw new Error(`Unexpected action.type: ${action.type}`);
+  }
+}
+
 function InputSection({ insertNotes }) {
-  const [insertTime, setInsertTime] = useState(0);
-  const [pitch, setPitch] = useState(64);
-  const [velocity, setVelocity] = useState(100);
-  const [duration, setDuration] = useState(1);
+  const [note, dispatch] = useReducer(reducer, {
+    start_time: 0,
+    pitch: 64,
+    velocity: 100,
+    duration: 1,
+  });
   const [step, setStep] = useState(1);
-  const insert = () => {
-    insertNotes(
-      [{ start_time: insertTime, pitch, velocity, duration }].map((el) => {
-        return { ...DEFAULT_NOTE, ...el };
-      })
-    );
-  };
-  const stepFn = () => {
-    setInsertTime(insertTime + step);
-  };
+  const insert = () => insertNotes([{ ...DEFAULT_NOTE, ...note }]);
+  const stepFn = () => dispatch({ type: "step", step });
   const insertAndStep = () => {
     insert();
     stepFn();
@@ -488,7 +524,35 @@ function InputSection({ insertNotes }) {
     <div>
       Input Section
       <div>
-        Insert Time:{" "}
+        <Input
+          label="Start Time"
+          type="start_time"
+          value={note.start_time}
+          dispatch={dispatch}
+          defaultValue={DEFAULT_NOTE.start_time}
+        />
+        <Input
+          label="Pitch"
+          type="pitch"
+          value={note.pitch}
+          dispatch={dispatch}
+          defaultValue={DEFAULT_NOTE.pitch}
+        />
+        <Input
+          label="Velocity"
+          type="velocity"
+          value={note.velocity}
+          dispatch={dispatch}
+          defaultValue={DEFAULT_NOTE.velocity}
+        />
+        <Input
+          label="Duration"
+          type="duration"
+          value={note.duration}
+          dispatch={dispatch}
+          defaultValue={DEFAULT_NOTE.duration}
+        />
+        {/* Insert Time:{" "}
         <input
           value={insertTime}
           onChange={(e) => setInsertTime(e.target.value)}
@@ -515,18 +579,12 @@ function InputSection({ insertNotes }) {
           updateValue={setDuration}
         />
         Step:{" "}
-        <InputCell id="duration" initialValue={step} updateValue={setStep} />
+        <InputCell id="duration" initialValue={step} updateValue={setStep} /> */}
       </div>
       <button onClick={insert}>Insert</button>
       <button onClick={insertAndStep}>Insert And Step</button>
       <button onClick={stepFn}>Step</button>
-      <pre>
-        {JSON.stringify(
-          { insertTime, pitch, velocity, duration, step },
-          null,
-          2
-        )}
-      </pre>
+      <pre>{JSON.stringify(note, null, 2)}</pre>
     </div>
   );
 }
