@@ -505,7 +505,7 @@ function reducer(state, action) {
   }
 }
 
-function InputSection({ insertNotes }) {
+function InputSection_({ insertNotes }) {
   const [note, dispatch] = useReducer(reducer, {
     start_time: 0,
     pitch: 64,
@@ -585,6 +585,66 @@ function InputSection({ insertNotes }) {
       <button onClick={insertAndStep}>Insert And Step</button>
       <button onClick={stepFn}>Step</button>
       <pre>{JSON.stringify(note, null, 2)}</pre>
+    </div>
+  );
+}
+
+function sanitizeValue({ value, commitedValue, type, minValue, maxValue }) {
+  let v = type === "integer" ? parseInt(value) : Number(value);
+  if (isNaN(v)) {
+    return commitedValue;
+  }
+
+  v = minValue !== undefined && v < minValue ? minValue : v;
+  v = maxValue !== undefined && v > maxValue ? maxValue : v;
+  return v;
+}
+
+function InputSection({ insertNotes }) {
+  const [commitedValues, setCommitedValues] = useState({
+    ...DEFAULT_NOTE,
+    step: 1,
+  });
+  const [values, setValues] = useState(commitedValues);
+
+  const onChange = (e) =>
+    setValues((old) => {
+      return { ...old, [e.target.name]: e.target.value };
+    });
+
+  const onFocus = (e) => e.target.select();
+
+  const onBlur = (e) => {
+    const value = sanitizeValue({
+      value: values[e.target.name],
+      commitedValue: commitedValues[e.target.name],
+      type: "number",
+      minValue: 0,
+    });
+    setValues((old) => ({ ...old, [e.target.name]: value }));
+    setCommitedValues((old) => ({ ...old, [e.target.name]: value }));
+  };
+
+  const getFieldProps = (name) => ({
+    value: values[name],
+    onChange,
+    onBlur,
+    onFocus,
+  });
+
+  return (
+    <div>
+      Input Section
+      <div>
+        Start Time:
+        <input name="start_time" {...getFieldProps("start_time")} />
+        Step:
+        <input name="step" {...getFieldProps("step")} />
+      </div>
+      <div style={{ display: "flex", gap: "16px" }}>
+        <pre>{JSON.stringify(values, null, 2)}</pre>
+        <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
+      </div>
     </div>
   );
 }
