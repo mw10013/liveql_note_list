@@ -437,162 +437,6 @@ const DEFAULT_NOTE = {
   note_id: 0, // HACK: undefined may show stale values in react table
 };
 
-const InputCell = ({ id, initialValue, updateValue }) => {
-  const [value, setValue] = useState(initialValue);
-  const onChange = (e) => setValue(e.target.value);
-  const onBlur = () => {
-    const c = cellConfig[id];
-    let v = c.type === "integer" ? parseInt(value) : Number(value);
-    if (isNaN(v)) {
-      setValue(initialValue);
-      return;
-    }
-
-    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
-    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
-
-    setValue(v);
-    updateValue(v);
-  };
-
-  const onFocus = (e) => e.target.select();
-
-  return (
-    <input
-      value={value}
-      onChange={onChange}
-      onBlur={onBlur}
-      onFocus={onFocus}
-    />
-  );
-};
-
-const Input = ({ label, type, value, dispatch, defaultValue }) => {
-  const onBlur = () => {
-    const c = cellConfig[type];
-    let v = c.type === "integer" ? parseInt(value) : Number(value);
-    if (isNaN(v)) {
-      dispatch({ type, value: defaultValue });
-      return;
-    }
-
-    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
-    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
-
-    dispatch({ type, value: v });
-  };
-
-  return (
-    <>
-      {label}:
-      <input
-        value={value}
-        onChange={(e) => dispatch({ type, value: e.target.value })}
-        onBlur={onBlur}
-        onFocus={(e) => e.target.select()}
-      />
-    </>
-  );
-};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case "start_time":
-    case "pitch":
-    case "velocity":
-    case "duration":
-      return { ...state, [action.type]: action.value };
-    case "step":
-      return { ...state, start_time: state.start_time + action.step };
-    default:
-      throw new Error(`Unexpected action.type: ${action.type}`);
-  }
-}
-
-function InputSection_({ insertNotes }) {
-  const [note, dispatch] = useReducer(reducer, {
-    start_time: 0,
-    pitch: 64,
-    velocity: 100,
-    duration: 1,
-  });
-  const [step, setStep] = useState(1);
-  const insert = () => insertNotes([{ ...DEFAULT_NOTE, ...note }]);
-  const stepFn = () => dispatch({ type: "step", step });
-  const insertAndStep = () => {
-    insert();
-    stepFn();
-  };
-
-  return (
-    <div>
-      Input Section
-      <div>
-        <Input
-          label="Start Time"
-          type="start_time"
-          value={note.start_time}
-          dispatch={dispatch}
-          defaultValue={DEFAULT_NOTE.start_time}
-        />
-        <Input
-          label="Pitch"
-          type="pitch"
-          value={note.pitch}
-          dispatch={dispatch}
-          defaultValue={DEFAULT_NOTE.pitch}
-        />
-        <Input
-          label="Velocity"
-          type="velocity"
-          value={note.velocity}
-          dispatch={dispatch}
-          defaultValue={DEFAULT_NOTE.velocity}
-        />
-        <Input
-          label="Duration"
-          type="duration"
-          value={note.duration}
-          dispatch={dispatch}
-          defaultValue={DEFAULT_NOTE.duration}
-        />
-        {/* Insert Time:{" "}
-        <input
-          value={insertTime}
-          onChange={(e) => setInsertTime(e.target.value)}
-          onBlur={() => {
-            let v = Number(insertTime);
-            v = isNaN(v) ? 0 : v;
-            v = v < 0 ? 0 : v;
-            setInsertTime(v);
-          }}
-          onFocus={(e) => e.target.select()}
-        />
-        Pitch:{" "}
-        <InputCell id="pitch" initialValue={pitch} updateValue={setPitch} />
-        Velocity:{" "}
-        <InputCell
-          id="velocity"
-          initialValue={velocity}
-          updateValue={setVelocity}
-        />
-        Duration:{" "}
-        <InputCell
-          id="duration"
-          initialValue={duration}
-          updateValue={setDuration}
-        />
-        Step:{" "}
-        <InputCell id="duration" initialValue={step} updateValue={setStep} /> */}
-      </div>
-      <button onClick={insert}>Insert</button>
-      <button onClick={insertAndStep}>Insert And Step</button>
-      <button onClick={stepFn}>Step</button>
-      <pre>{JSON.stringify(note, null, 2)}</pre>
-    </div>
-  );
-}
-
 function sanitizeValue({ value, commitedValue, type, minValue, maxValue }) {
   let v = type === "integer" ? parseInt(value) : Number(value);
   if (isNaN(v)) {
@@ -825,9 +669,10 @@ function Content() {
             />
           </Styles>
           <InputSection insertNotes={insertNotes} />
-
-          <pre>{JSON.stringify(notes, null, 2)}</pre>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
+          <div style={{ display: "flex", gap: "16px" }}>
+            <pre>{JSON.stringify(notes, null, 2)}</pre>
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+          </div>
         </div>
       ) : (
         <div>
