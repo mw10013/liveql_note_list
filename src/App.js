@@ -590,7 +590,6 @@ function Content() {
   if (error) return "An error has occurred: " + error.message;
   return (
     <div>
-      <p>React query status: {status}</p>
       <button
         onClick={(e) => {
           queryClient.setQueryData("selectedTrackDetailClip", null);
@@ -599,6 +598,7 @@ function Content() {
       >
         Fetch
       </button>
+      React query status: {status}
       {data && data.live_set.view.detail_clip ? (
         <div>
           <h1>{data.live_set.view.selected_track.name}</h1>
