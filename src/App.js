@@ -495,11 +495,21 @@ function InputSection({ insertNotes }) {
     setCommitedValues((old) => ({ ...old, [e.target.name]: value }));
   };
 
+  const onKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setValues((old) => ({
+        ...old,
+        [e.target.name]: commitedValues[e.target.name],
+      }));
+    }
+  };
+
   const getFieldProps = (name) => ({
     value: values[name],
     onChange,
     onBlur,
     onFocus,
+    onKeyDown,
   });
 
   return (
