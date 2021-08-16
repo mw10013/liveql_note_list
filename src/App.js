@@ -194,31 +194,35 @@ const IndeterminateCheckbox = React.forwardRef(
 const cellConfig = {
   start_time: {
     type: "number",
-    min_value: 0,
+    minValue: 0,
   },
   pitch: {
     type: "integer",
-    min_value: 0,
-    max_value: 127,
+    minValue: 0,
+    maxValue: 127,
   },
   velocity: {
     type: "number",
-    min_value: 0,
-    max_value: 127,
+    minValue: 0,
+    maxValue: 127,
   },
   duration: {
     type: "number",
-    min_value: 0,
+    minValue: 0,
   },
   probability: {
     type: "number",
-    min_value: 0,
-    max_value: 1,
+    minValue: 0,
+    maxValue: 1,
   },
   velocity_deviation: {
     type: "number",
-    min_value: -127,
-    max_value: 127,
+    minValue: -127,
+    maxValue: 127,
+  },
+  step: {
+    type: "number",
+    minValue: 0,
   },
 };
 
@@ -244,8 +248,8 @@ const EditableCell = ({
       return;
     }
 
-    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
-    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
+    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
+    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
 
     setValue(v);
     updateNote(index, id, v);
@@ -444,8 +448,8 @@ const InputCell = ({ id, initialValue, updateValue }) => {
       return;
     }
 
-    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
-    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
+    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
+    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
 
     setValue(v);
     updateValue(v);
@@ -472,8 +476,8 @@ const Input = ({ label, type, value, dispatch, defaultValue }) => {
       return;
     }
 
-    v = c.min_value !== undefined && v < c.min_value ? c.min_value : v;
-    v = c.max_value !== undefined && v > c.max_value ? c.max_value : v;
+    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
+    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
 
     dispatch({ type, value: v });
   };
@@ -607,6 +611,26 @@ function InputSection({ insertNotes }) {
   });
   const [values, setValues] = useState(commitedValues);
 
+  const insert = () =>
+    insertNotes([
+      {
+        ...DEFAULT_NOTE,
+        start_time: values.start_time,
+        pitch: values.pitch,
+        velocity: values.velocity,
+        duration: values.duration,
+      },
+    ]);
+  const step = () => {
+    const start_time = commitedValues.start_time + commitedValues.step;
+    setValues((old) => ({ ...old, start_time }));
+    setCommitedValues((old) => ({ ...old, start_time }));
+  };
+  const insertAndStep = () => {
+    insert();
+    step();
+  };
+
   const onChange = (e) =>
     setValues((old) => {
       return { ...old, [e.target.name]: e.target.value };
@@ -615,11 +639,13 @@ function InputSection({ insertNotes }) {
   const onFocus = (e) => e.target.select();
 
   const onBlur = (e) => {
+    const config = cellConfig[e.target.name];
     const value = sanitizeValue({
       value: values[e.target.name],
       commitedValue: commitedValues[e.target.name],
-      type: "number",
-      minValue: 0,
+      type: config.type,
+      minValue: config.minValue,
+      maxValue: config.maxValue,
     });
     setValues((old) => ({ ...old, [e.target.name]: value }));
     setCommitedValues((old) => ({ ...old, [e.target.name]: value }));
@@ -638,9 +664,18 @@ function InputSection({ insertNotes }) {
       <div>
         Start Time:
         <input name="start_time" {...getFieldProps("start_time")} />
+        Pitch:
+        <input name="pitch" {...getFieldProps("pitch")} />
+        Velocity:
+        <input name="velocity" {...getFieldProps("velocity")} />
+        Duration:
+        <input name="duration" {...getFieldProps("duration")} />
         Step:
         <input name="step" {...getFieldProps("step")} />
       </div>
+      <button onClick={insert}>Insert</button>
+      <button onClick={insertAndStep}>Insert And Step</button>
+      <button onClick={step}>Step</button>
       <div style={{ display: "flex", gap: "16px" }}>
         <pre>{JSON.stringify(values, null, 2)}</pre>
         <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
