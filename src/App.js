@@ -277,7 +277,14 @@ const defaultColumn = {
   Cell: EditableCell,
 };
 
-function Table({ columns, data, applyToNotes, updateNote, skipPageReset }) {
+function Table({
+  columns,
+  data,
+  applyToNotes,
+  updateNote,
+  skipPageReset,
+  setSelection,
+}) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -334,6 +341,10 @@ function Table({ columns, data, applyToNotes, updateNote, skipPageReset }) {
     }
   );
 
+  useEffect(() => {
+    setSelection(selectedRowIds);
+  }, [setSelection, selectedRowIds]);
+
   return (
     <>
       <table {...getTableProps()}>
@@ -361,34 +372,6 @@ function Table({ columns, data, applyToNotes, updateNote, skipPageReset }) {
           })}
         </tbody>
       </table>
-      <div>
-        <button
-          disabled={Object.keys(selectedRowIds).length === 0}
-          onClick={() => {
-            applyToNotes((notes) => {
-              return notes.filter(
-                (el, index) => !selectedRowIds.hasOwnProperty(index)
-              );
-            });
-          }}
-        >
-          Delete
-        </button>
-      </div>
-      <pre>
-        <code>
-          {JSON.stringify(
-            {
-              selectedRowIds: selectedRowIds,
-              /* 'selectedFlatRows[].original': selectedFlatRows.map(
-                  d => d.original
-                ), */
-            },
-            null,
-            2
-          )}
-        </code>
-      </pre>
     </>
   );
 }
@@ -549,6 +532,7 @@ function Content() {
   const [data, setData] = useState();
   const [notes, setNotes] = useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
+  const [selection, setSelection] = useState({});
 
   const updateNote = (rowIndex, columnId, value) => {
     setSkipPageReset(true); // Turn on flag to not reset page
@@ -564,10 +548,11 @@ function Content() {
   const applyToNotes = (fn) =>
     setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
 
-  const insertNotes = (notes) =>
+  const insertNotes = (notes) => {
     setNotes((old) =>
       update(old, { $apply: (arr) => [...notes, ...arr] }).sort(compareNotes)
     );
+  };
 
   // After data chagnes, we turn the flag back off
   // so that if data actually changes when we're not
@@ -666,6 +651,18 @@ function Content() {
                 >
                   Stop
                 </button>
+                <button
+                  disabled={Object.keys(selection).length === 0}
+                  onClick={() => {
+                    applyToNotes((notes) => {
+                      return notes.filter(
+                        (el, index) => !selection.hasOwnProperty(index)
+                      );
+                    });
+                  }}
+                >
+                  Delete
+                </button>
               </>
             )}
           </div>
@@ -676,12 +673,14 @@ function Content() {
               applyToNotes={applyToNotes}
               updateNote={updateNote}
               skipPageReset={skipPageReset}
+              setSelection={setSelection}
             />
           </Styles>
           <InputSection insertNotes={insertNotes} />
           <div style={{ display: "flex", gap: "16px" }}>
             <pre>{JSON.stringify(notes, null, 2)}</pre>
             <pre>{JSON.stringify(data, null, 2)}</pre>
+            <pre>{JSON.stringify({ selection }, null, 2)}</pre>
           </div>
         </div>
       ) : (
