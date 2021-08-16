@@ -1,5 +1,4 @@
-import React, { useEffect, useReducer, useState } from "react";
-// import ReactDOM from "react-dom";
+import React, { useEffect, useState } from "react";
 import {
   QueryClient,
   QueryClientProvider,
@@ -284,14 +283,7 @@ const defaultColumn = {
   Cell: EditableCell,
 };
 
-function Table({
-  columns,
-  data,
-  applyToNotes,
-  updateNote,
-  skipPageReset,
-  setSelection,
-}) {
+function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -666,7 +658,6 @@ function Content() {
             <Table
               columns={columns}
               data={notes}
-              applyToNotes={applyToNotes}
               updateNote={updateNote}
               skipPageReset={skipPageReset}
               setSelection={setSelection}
