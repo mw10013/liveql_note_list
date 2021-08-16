@@ -226,36 +226,43 @@ const cellConfig = {
   },
 };
 
+function sanitizeValue(value, defaultValue, type, minValue, maxValue) {
+  let v = type === "integer" ? parseInt(value) : Number(value);
+  if (isNaN(v)) {
+    return defaultValue;
+  }
+
+  v = minValue !== undefined && v < minValue ? minValue : v;
+  v = maxValue !== undefined && v > maxValue ? maxValue : v;
+  return v;
+}
+
 const EditableCell = ({
   value: initialValue,
   row: { index },
   column: { id },
   updateNote,
 }) => {
-  // We need to keep and update the state of the cell normally
   const [value, setValue] = React.useState(initialValue);
+  const onChange = (e) => setValue(e.target.value);
 
-  const onChange = (e) => {
-    if (!cellConfig[id].read_only) setValue(e.target.value);
-  };
-
-  // We'll only update the external data when the input is blurred
   const onBlur = () => {
-    const c = cellConfig[id];
-    let v = c.type === "integer" ? parseInt(value) : Number(value);
-    if (isNaN(v)) {
-      setValue(initialValue);
-      return;
-    }
-
-    v = c.minValue !== undefined && v < c.minValue ? c.minValue : v;
-    v = c.maxValue !== undefined && v > c.maxValue ? c.maxValue : v;
-
+    const config = cellConfig[id];
+    const v = sanitizeValue(
+      value,
+      initialValue,
+      config.type,
+      config.minValue,
+      config.maxValue
+    );
     setValue(v);
     updateNote(index, id, v);
   };
 
   const onFocus = (e) => e.target.select();
+  const onKeyDown = (e) => {
+    if (e.key === "Escape") setValue(initialValue);
+  };
 
   // If the initialValue is changed external, sync it up with our state
   React.useEffect(() => {
@@ -268,11 +275,11 @@ const EditableCell = ({
       onChange={onChange}
       onBlur={onBlur}
       onFocus={onFocus}
+      onKeyDown={onKeyDown}
     />
   );
 };
 
-// Set our editable cell renderer as the default Cell renderer
 const defaultColumn = {
   Cell: EditableCell,
 };
@@ -420,17 +427,6 @@ const DEFAULT_NOTE = {
   note_id: 0, // HACK: undefined may show stale values in react table
 };
 
-function sanitizeValue({ value, commitedValue, type, minValue, maxValue }) {
-  let v = type === "integer" ? parseInt(value) : Number(value);
-  if (isNaN(v)) {
-    return commitedValue;
-  }
-
-  v = minValue !== undefined && v < minValue ? minValue : v;
-  v = maxValue !== undefined && v > maxValue ? maxValue : v;
-  return v;
-}
-
 function InputSection({ insertNotes }) {
   const [commitedValues, setCommitedValues] = useState({
     ...DEFAULT_NOTE,
@@ -467,13 +463,13 @@ function InputSection({ insertNotes }) {
 
   const onBlur = (e) => {
     const config = cellConfig[e.target.name];
-    const value = sanitizeValue({
-      value: values[e.target.name],
-      commitedValue: commitedValues[e.target.name],
-      type: config.type,
-      minValue: config.minValue,
-      maxValue: config.maxValue,
-    });
+    const value = sanitizeValue(
+      values[e.target.name],
+      commitedValues[e.target.name],
+      config.type,
+      config.minValue,
+      config.maxValue
+    );
     setValues((old) => ({ ...old, [e.target.name]: value }));
     setCommitedValues((old) => ({ ...old, [e.target.name]: value }));
   };
