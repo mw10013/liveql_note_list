@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import tw from "twin.macro";
 import {
   QueryClient,
   QueryClientProvider,
@@ -11,7 +12,7 @@ import { request, gql } from "graphql-request";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
-import "./App.css";
+// import "./App.css";
 
 const queryClient = new QueryClient();
 const liveqlEndpoint = "http://localhost:4000/";
@@ -579,6 +580,8 @@ function Content() {
   return (
     <div>
       <button
+        tw="bg-purple-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow"
+        type="button"
         onClick={(e) => {
           queryClient.setQueryData("selectedTrackDetailClip", null);
           refetch({ cancelRefresh: true });
