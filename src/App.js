@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import tw from "twin.macro";
 import {
   QueryClient,
   QueryClientProvider,
@@ -12,8 +11,7 @@ import { request, gql } from "graphql-request";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
-
-const Button = tw.button`bg-purple-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow mr-1 mb-1`;
+import "./App.css";
 
 const queryClient = new QueryClient();
 const liveqlEndpoint = "http://localhost:4000/";
@@ -500,9 +498,9 @@ function InputSection({ insertNotes }) {
         Step:
         <input name="step" {...getFieldProps("step")} />
       </div>
-      <Button onClick={insert}>Insert</Button>
-      <Button onClick={insertAndStep}>Insert And Step</Button>
-      <Button onClick={step}>Step</Button>
+      <button onClick={insert}>Insert</button>
+      <button onClick={insertAndStep}>Insert And Step</button>
+      <button onClick={step}>Step</button>
       <div style={{ display: "flex", gap: "16px" }}>
         <pre>{JSON.stringify(values, null, 2)}</pre>
         <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
@@ -580,16 +578,14 @@ function Content() {
   if (error) return "An error has occurred: " + error.message;
   return (
     <div>
-      <Button
-        tw="bg-purple-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow"
-        type="button"
+      <button
         onClick={(e) => {
           queryClient.setQueryData("selectedTrackDetailClip", null);
           refetch({ cancelRefresh: true });
         }}
       >
         Fetch
-      </Button>
+      </button>
       React query status: {status}
       {data && data.live_set.view.detail_clip ? (
         <div>
@@ -608,7 +604,7 @@ function Content() {
                 {mutationReplaceAllNotes.isSuccess ? (
                   <div>All notes replaced.</div>
                 ) : null}
-                <Button
+                <button
                   onClick={() => {
                     mutationReplaceAllNotes.mutate({
                       id: data.live_set.view.detail_clip.id,
@@ -619,8 +615,8 @@ function Content() {
                   }}
                 >
                   Replace All Notes
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() =>
                     mutationFire.mutate({
                       id: data.live_set.view.detail_clip.id,
@@ -628,22 +624,22 @@ function Content() {
                   }
                 >
                   Fire
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => {
                     mutatationStart.mutate({ id: data.live_set.id });
                   }}
                 >
                   Start
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => {
                     mutatationStop.mutate({ id: data.live_set.id });
                   }}
                 >
                   Stop
-                </Button>
-                <Button
+                </button>
+                <button
                   disabled={Object.keys(selection).length === 0}
                   onClick={() => {
                     applyToNotes((notes) => {
@@ -654,7 +650,7 @@ function Content() {
                   }}
                 >
                   Delete
-                </Button>
+                </button>
               </>
             )}
           </div>
