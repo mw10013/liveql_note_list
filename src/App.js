@@ -577,7 +577,7 @@ function Content() {
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
   return (
-    <div>
+    <div className="">
       <button
         onClick={(e) => {
           queryClient.setQueryData("selectedTrackDetailClip", null);
