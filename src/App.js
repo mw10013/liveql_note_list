@@ -444,33 +444,55 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   }, [setSelection, selectedRowIds]);
 
   return (
-    <>
-      <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row, i) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => {
+    <div className="flex flex-col p-2">
+      <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <table
+              className="min-w-full divide-y divide-gray-200"
+              {...getTableProps()}
+            >
+              <thead className="bg-gray-50">
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        {...column.getHeaderProps()}
+                      >
+                        {column.render("Header")}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody
+                className="bg-white divide-y divide-gray-200"
+                {...getTableBodyProps()}
+              >
+                {page.map((row, i) => {
+                  prepareRow(row);
                   return (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => {
+                        return (
+                          <td
+                            className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                            {...cell.getCellProps()}
+                          >
+                            {cell.render("Cell")}
+                          </td>
+                        );
+                      })}
+                    </tr>
                   );
                 })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -600,10 +622,10 @@ function InputSection({ insertNotes }) {
       <Button onClick={insert}>Insert</Button>
       <Button onClick={insertAndStep}>Insert And Step</Button>
       <Button onClick={step}>Step</Button>
-      <div style={{ display: "flex", gap: "16px" }}>
+      {/* <div className="flex gap-4">
         <pre>{JSON.stringify(values, null, 2)}</pre>
         <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -753,18 +775,16 @@ function Content() {
               </>
             )}
           </div>
-          <TableExample />
-          <Styles>
-            <Table
-              columns={columns}
-              data={notes}
-              updateNote={updateNote}
-              skipPageReset={skipPageReset}
-              setSelection={setSelection}
-            />
-          </Styles>
+          <Table
+            columns={columns}
+            data={notes}
+            updateNote={updateNote}
+            skipPageReset={skipPageReset}
+            setSelection={setSelection}
+          />
           <InputSection insertNotes={insertNotes} />
-          <div style={{ display: "flex", gap: "16px" }}>
+          <TableExample />
+          <div className="flex gap-4">
             <pre>{JSON.stringify(notes, null, 2)}</pre>
             <pre>{JSON.stringify(data, null, 2)}</pre>
             <pre>{JSON.stringify({ selection }, null, 2)}</pre>
