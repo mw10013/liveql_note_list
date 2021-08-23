@@ -619,9 +619,11 @@ function InputSection({ insertNotes }) {
         Step:
         <input name="step" {...getFieldProps("step")} />
       </div>
-      <Button onClick={insert}>Insert</Button>
-      <Button onClick={insertAndStep}>Insert And Step</Button>
-      <Button onClick={step}>Step</Button>
+      <ButtonGroup
+        left={{ onClick: insert, children: "Insert" }}
+        middle={{ onClick: insertAndStep, children: "Insert+Step" }}
+        right={{ onClick: step, children: "Step" }}
+      />
       {/* <div className="flex gap-4">
         <pre>{JSON.stringify(values, null, 2)}</pre>
         <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
@@ -635,6 +637,63 @@ function compareNotes(a, b) {
   if (a.start_time < b.start_time) return -1;
   if (a.start_time > b.start_time) return 1;
   return a.pitch - b.pitch;
+}
+
+function ButtonGroupExample() {
+  return (
+    <span className="relative z-0 inline-flex shadow-sm rounded-md">
+      <button
+        type="button"
+        className="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+      >
+        Years
+      </button>
+      <button
+        type="button"
+        className="-ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+      >
+        Months
+      </button>
+      <button
+        type="button"
+        className="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+      >
+        Days
+      </button>
+    </span>
+  );
+}
+
+function ButtonGroup({
+  left: { children: leftChildren, ...leftProps },
+  right: { children: rightChildren, ...rightProps },
+  middle: { children: middleChildren, ...middleProps },
+}) {
+  return (
+    <span className="relative z-0 inline-flex shadow-sm rounded-md">
+      <button
+        type="button"
+        className="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        {...leftProps}
+      >
+        {leftChildren}
+      </button>
+      <button
+        type="button"
+        className="-ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        {...middleProps}
+      >
+        {middleChildren}
+      </button>
+      <button
+        type="button"
+        className="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        {...rightProps}
+      >
+        {rightChildren}
+      </button>
+    </span>
+  );
 }
 
 function Content() {
@@ -737,29 +796,27 @@ function Content() {
                 >
                   Replace All Notes
                 </Button>
-                <Button
-                  onClick={() =>
-                    mutationFire.mutate({
-                      id: data.live_set.view.detail_clip.id,
-                    })
-                  }
-                >
-                  Fire
-                </Button>
-                <Button
-                  onClick={() => {
-                    mutatationStart.mutate({ id: data.live_set.id });
+                <ButtonGroup
+                  left={{
+                    onClick: () =>
+                      mutationFire.mutate({
+                        id: data.live_set.view.detail_clip.id,
+                      }),
+                    children: "Fire",
                   }}
-                >
-                  Start
-                </Button>
-                <Button
-                  onClick={() => {
-                    mutatationStop.mutate({ id: data.live_set.id });
+                  middle={{
+                    onClick: () => {
+                      mutatationStart.mutate({ id: data.live_set.id });
+                    },
+                    children: "Start",
                   }}
-                >
-                  Stop
-                </Button>
+                  right={{
+                    onClick: () => {
+                      mutatationStop.mutate({ id: data.live_set.id });
+                    },
+                    children: "Stop",
+                  }}
+                />
                 <Button
                   disabled={Object.keys(selection).length === 0}
                   onClick={() => {
