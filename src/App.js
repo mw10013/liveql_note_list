@@ -56,6 +56,28 @@ function ButtonGroup({
   );
 }
 
+const IndeterminateCheckbox = React.forwardRef(
+  ({ indeterminate, ...rest }, ref) => {
+    const defaultRef = React.useRef();
+    const resolvedRef = ref || defaultRef;
+
+    React.useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate;
+    }, [resolvedRef, indeterminate]);
+
+    return (
+      <>
+        <input
+          type="checkbox"
+          className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+          ref={resolvedRef}
+          {...rest}
+        />
+      </>
+    );
+  }
+);
+
 const queryClient = new QueryClient();
 const liveqlEndpoint = "http://localhost:4000/";
 
@@ -178,60 +200,6 @@ function mutateFire(variables) {
     variables
   );
 }
-
-const Styles = styled.div`
-  padding: 1rem;
-
-  table {
-    border-spacing: 0;
-    border: 1px solid black;
-
-    tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-        }
-      }
-    }
-    th,
-    td {
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid black;
-      border-right: 1px solid black;
-
-      :last-child {
-        border-right: 0;
-      }
-    }
-    input {
-      font-size: 1rem;
-      padding: 0;
-      margin: 0;
-      border: 0;
-    }
-  }
-  .pagination {
-    padding: 0.5rem;
-  }
-`;
-
-const IndeterminateCheckbox = React.forwardRef(
-  ({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef();
-    const resolvedRef = ref || defaultRef;
-
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
-
-    return (
-      <>
-        <input type="checkbox" ref={resolvedRef} {...rest} />
-      </>
-    );
-  }
-);
 
 const cellConfig = {
   start_time: {
@@ -553,11 +521,6 @@ const columns = [
     Header: "Vel Dev",
     accessor: "velocity_deviation",
   },
-  {
-    Header: "Note Id",
-    accessor: "note_id",
-    Cell: ({ value }) => String(value),
-  },
 ];
 
 const DEFAULT_NOTE = {
@@ -569,7 +532,6 @@ const DEFAULT_NOTE = {
   probability: 1,
   velocity_deviation: 0,
   release_velocity: 64,
-  note_id: 0, // HACK: undefined may show stale values in react table
 };
 
 function InputSection({ insertNotes }) {
