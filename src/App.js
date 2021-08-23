@@ -30,24 +30,24 @@ function ButtonGroup({
   middle: { children: middleChildren, ...middleProps },
 }) {
   return (
-    <span className="relative z-0 inline-flex shadow-sm rounded-md">
+    <span className="relative z-0 inline-flex shadow-sm rounded">
       <button
         type="button"
-        className="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        className="relative inline-flex items-center px-2.5 py-1.5 rounded-l border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         {...leftProps}
       >
         {leftChildren}
       </button>
       <button
         type="button"
-        className="-ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        className="-ml-px relative inline-flex items-center px-2.5 py-1.5 border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         {...middleProps}
       >
         {middleChildren}
       </button>
       <button
         type="button"
-        className="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        className="-ml-px relative inline-flex items-center px-2.5 py-1.5 rounded-r border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         {...rightProps}
       >
         {rightChildren}
