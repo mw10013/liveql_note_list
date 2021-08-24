@@ -281,6 +281,9 @@ const EditableCell = ({
 
   return (
     <input
+      type="text"
+      // className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+      className="focus:shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 border-opacity-0 rounded-md"
       value={value}
       onChange={onChange}
       onBlur={onBlur}
@@ -452,7 +455,7 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
                       {row.cells.map((cell) => {
                         return (
                           <td
-                            className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                            className="px-6 py-1 whitespace-nowrap text-sm font-medium text-gray-900"
                             {...cell.getCellProps()}
                           >
                             {cell.render("Cell")}
