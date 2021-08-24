@@ -494,11 +494,11 @@ const columns = [
     accessor: "velocity",
   },
   {
-    Header: "Duration",
+    Header: "Dur",
     accessor: "duration",
   },
   {
-    Header: "Probability",
+    Header: "Prob",
     accessor: "probability",
   },
   {
