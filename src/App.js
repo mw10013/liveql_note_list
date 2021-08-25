@@ -521,6 +521,26 @@ const DEFAULT_NOTE = {
   release_velocity: 64,
 };
 
+function InputField({ id, label, ...props }) {
+  return (
+    <div className="relative border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600">
+      <label
+        htmlFor={id}
+        className="absolute -top-2 left-2 -mt-px inline-block px-1 bg-white text-xs font-medium text-gray-900"
+      >
+        {label}
+      </label>
+      <input
+        type="text"
+        name={id}
+        id={id}
+        className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
+        {...props}
+      />
+    </div>
+  );
+}
+
 function InputSection({ insertNotes }) {
   const [commitedValues, setCommitedValues] = useState({
     ...DEFAULT_NOTE,
@@ -597,7 +617,23 @@ function InputSection({ insertNotes }) {
           </p>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6-">
-          <div className="sm:col-span-4">Pitch</div>
+          <InputField
+            id="start_time"
+            label="Start"
+            {...getFieldProps("start_time")}
+          />
+          <InputField id="pitch" label="Pitch" {...getFieldProps("pitch")} />
+          <InputField
+            id="velocity"
+            label="Velocity"
+            {...getFieldProps("velocity")}
+          />
+          <InputField
+            id="duration"
+            label="duration"
+            {...getFieldProps("duration")}
+          />
+          <InputField id="step" label="Step" {...getFieldProps("step")} />
           <div className="relative border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600">
             <label
               htmlFor="pitch"
