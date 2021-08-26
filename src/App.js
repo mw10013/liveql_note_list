@@ -634,52 +634,19 @@ function InputSection({ insertNotes }) {
             {...getFieldProps("duration")}
           />
           <InputField id="step" label="Step" {...getFieldProps("step")} />
-          <ButtonGroup
-            left={{ onClick: insert, children: "Insert" }}
-            middle={{ onClick: insertAndStep, children: "Insert+Step" }}
-            right={{ onClick: step, children: "Step" }}
-          />
-          <div className="relative border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600">
-            <label
-              htmlFor="pitch"
-              className="absolute -top-2 left-2 -mt-px inline-block px-1 bg-white text-xs font-medium text-gray-900"
-            >
-              Pitch
-            </label>
-            <input
-              type="text"
-              name="pitch"
-              id="pitch"
-              className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
+          <div>
+            <ButtonGroup
+              left={{ onClick: insert, children: "Insert" }}
+              middle={{ onClick: insertAndStep, children: "Insert+Step" }}
+              right={{ onClick: step, children: "Step" }}
             />
           </div>
         </div>
       </div>
-      <div>
-        Input Section
-        <div>
-          Start Time:
-          <input name="start_time" {...getFieldProps("start_time")} />
-          Pitch:
-          <input name="pitch" {...getFieldProps("pitch")} />
-          Velocity:
-          <input name="velocity" {...getFieldProps("velocity")} />
-          Duration:
-          <input name="duration" {...getFieldProps("duration")} />
-          Step:
-          <input name="step" {...getFieldProps("step")} />
-        </div>
-        <OverlappingLabelExample />
-        <ButtonGroup
-          left={{ onClick: insert, children: "Insert" }}
-          middle={{ onClick: insertAndStep, children: "Insert+Step" }}
-          right={{ onClick: step, children: "Step" }}
-        />
-        {/* <div className="flex gap-4">
+      {/* <div className="flex gap-4">
         <pre>{JSON.stringify(values, null, 2)}</pre>
         <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
       </div> */}
-      </div>
     </>
   );
 }
@@ -1295,7 +1262,7 @@ function Content() {
             )}
           </div>
           <InputSection insertNotes={insertNotes} />
-          <SimpleFormExample />
+          {/* <SimpleFormExample /> */}
           <Table
             columns={columns}
             data={notes}
