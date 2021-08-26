@@ -1098,22 +1098,28 @@ function SimpleFormExample() {
   );
 }
 
-function OverlappingLabelExample() {
+function PageHeadingExample() {
   return (
-    <div className="relative border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600">
-      <label
-        htmlFor="name"
-        className="absolute -top-2 left-2 -mt-px inline-block px-1 bg-white text-xs font-medium text-gray-900"
-      >
-        Name
-      </label>
-      <input
-        type="text"
-        name="name"
-        id="name"
-        className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
-        placeholder="Jane Doe"
-      />
+    <div className="md:flex md:items-center md:justify-between">
+      <div className="flex-1 min-w-0">
+        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+          Back End Developer
+        </h2>
+      </div>
+      <div className="mt-4 flex md:mt-0 md:ml-4">
+        <button
+          type="button"
+          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Publish
+        </button>
+      </div>
     </div>
   );
 }
@@ -1183,107 +1189,115 @@ function Content() {
   const mutatationStart = useMutation(mutateStart);
   const mutatationStop = useMutation(mutateStop);
 
-  if (isLoading) return "Loading...";
+  // if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
   return (
-    <div className="">
-      <Button
-        onClick={(e) => {
-          queryClient.setQueryData("selectedTrackDetailClip", null);
-          refetch({ cancelRefresh: true });
-        }}
-      >
-        Fetch
-      </Button>
-      React query status: {status}
-      {data && data.live_set.view.detail_clip ? (
-        <div>
-          <h1>{data.live_set.view.selected_track.name}</h1>
-          <h2>{data.live_set.view.detail_clip.name}</h2>
+    <>
+      <div className="md:flex md:items-center md:justify-between">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            Liveql Note List
+          </h2>
+        </div>
+        <Button
+          onClick={(e) => {
+            queryClient.setQueryData("selectedTrackDetailClip", null);
+            refetch({ cancelRefresh: true });
+          }}
+        >
+          Fetch
+        </Button>
+      </div>
+      <div className="">
+        {data && data.live_set.view.detail_clip ? (
           <div>
-            {mutationReplaceAllNotes.isLoading ? (
-              "Replacing..."
-            ) : (
-              <>
-                {mutationReplaceAllNotes.isError ? (
-                  <div>
-                    An error occurred: {mutationReplaceAllNotes.error.message}
-                  </div>
-                ) : null}
-                {mutationReplaceAllNotes.isSuccess ? (
-                  <div>All notes replaced.</div>
-                ) : null}
-                <Button
-                  onClick={() => {
-                    mutationReplaceAllNotes.mutate({
-                      id: data.live_set.view.detail_clip.id,
-                      notesDictionary: {
-                        notes: notes.map(({ note_id, ...n }) => n),
-                      },
-                    });
-                  }}
-                >
-                  Replace All Notes
-                </Button>
-                <ButtonGroup
-                  left={{
-                    onClick: () =>
-                      mutationFire.mutate({
+            <h1>{data.live_set.view.selected_track.name}</h1>
+            <h2>{data.live_set.view.detail_clip.name}</h2>
+            <div>
+              {mutationReplaceAllNotes.isLoading ? (
+                "Replacing..."
+              ) : (
+                <>
+                  {mutationReplaceAllNotes.isError ? (
+                    <div>
+                      An error occurred: {mutationReplaceAllNotes.error.message}
+                    </div>
+                  ) : null}
+                  {mutationReplaceAllNotes.isSuccess ? (
+                    <div>All notes replaced.</div>
+                  ) : null}
+                  <Button
+                    onClick={() => {
+                      mutationReplaceAllNotes.mutate({
                         id: data.live_set.view.detail_clip.id,
-                      }),
-                    children: "Fire",
-                  }}
-                  middle={{
-                    onClick: () => {
-                      mutatationStart.mutate({ id: data.live_set.id });
-                    },
-                    children: "Start",
-                  }}
-                  right={{
-                    onClick: () => {
-                      mutatationStop.mutate({ id: data.live_set.id });
-                    },
-                    children: "Stop",
-                  }}
-                />
-                <Button
-                  disabled={Object.keys(selection).length === 0}
-                  onClick={() => {
-                    applyToNotes((notes) => {
-                      return notes.filter(
-                        (el, index) => !selection.hasOwnProperty(index)
-                      );
-                    });
-                  }}
-                >
-                  Delete
-                </Button>
-              </>
-            )}
+                        notesDictionary: {
+                          notes: notes.map(({ note_id, ...n }) => n),
+                        },
+                      });
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <ButtonGroup
+                    left={{
+                      onClick: () =>
+                        mutationFire.mutate({
+                          id: data.live_set.view.detail_clip.id,
+                        }),
+                      children: "Fire",
+                    }}
+                    middle={{
+                      onClick: () => {
+                        mutatationStart.mutate({ id: data.live_set.id });
+                      },
+                      children: "Start",
+                    }}
+                    right={{
+                      onClick: () => {
+                        mutatationStop.mutate({ id: data.live_set.id });
+                      },
+                      children: "Stop",
+                    }}
+                  />
+                  <Button
+                    disabled={Object.keys(selection).length === 0}
+                    onClick={() => {
+                      applyToNotes((notes) => {
+                        return notes.filter(
+                          (el, index) => !selection.hasOwnProperty(index)
+                        );
+                      });
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
+            </div>
+            <InputSection insertNotes={insertNotes} />
+            {/* <SimpleFormExample /> */}
+            <Table
+              columns={columns}
+              data={notes}
+              updateNote={updateNote}
+              skipPageReset={skipPageReset}
+              setSelection={setSelection}
+            />
+            <TableExample />
+            <div className="flex gap-4">
+              <pre>{JSON.stringify(notes, null, 2)}</pre>
+              <pre>{JSON.stringify(data, null, 2)}</pre>
+              <pre>{JSON.stringify({ selection }, null, 2)}</pre>
+            </div>
           </div>
-          <InputSection insertNotes={insertNotes} />
-          {/* <SimpleFormExample /> */}
-          <Table
-            columns={columns}
-            data={notes}
-            updateNote={updateNote}
-            skipPageReset={skipPageReset}
-            setSelection={setSelection}
-          />
-          <TableExample />
-          <div className="flex gap-4">
-            <pre>{JSON.stringify(notes, null, 2)}</pre>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
-            <pre>{JSON.stringify({ selection }, null, 2)}</pre>
+        ) : (
+          <div>
+            <h2>No clip selected.</h2>
           </div>
-        </div>
-      ) : (
-        <div>
-          <h2>No clip selected.</h2>
-        </div>
-      )}
-      {/* <ReactQueryDevtools initialIsOpen /> */}
-    </div>
+        )}
+        {/* <ReactQueryDevtools initialIsOpen /> */}
+      </div>
+    </>
   );
 }
 
