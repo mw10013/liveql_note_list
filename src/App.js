@@ -1168,7 +1168,7 @@ function Content() {
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   const [selection, setSelection] = useState({});
   const [notificationMessage, setNotificationMessage] = useState("");
-  const [showNotification, setShowNotification] = useState(true);
+  const [showNotification, setShowNotification] = useState(false);
 
   const onReactQueryError = (error) => {
     setNotificationMessage(error.message);
@@ -1221,10 +1221,16 @@ function Content() {
     }
   }, [queryData]);
 
-  const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes);
-  const mutationFire = useMutation(mutateFire);
-  const mutatationStart = useMutation(mutateStart);
-  const mutatationStop = useMutation(mutateStop);
+  const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes, {
+    onError: onReactQueryError,
+  });
+  const mutationFire = useMutation(mutateFire, { onError: onReactQueryError });
+  const mutatationStart = useMutation(mutateStart, {
+    onError: onReactQueryError,
+  });
+  const mutatationStop = useMutation(mutateStop, {
+    onError: onReactQueryError,
+  });
 
   return (
     <>
@@ -1261,6 +1267,7 @@ function Content() {
                   {mutationReplaceAllNotes.isSuccess ? (
                     <div>All notes replaced.</div>
                   ) : null}
+                  in between?
                   <Button
                     onClick={() => {
                       mutationReplaceAllNotes.mutate({
