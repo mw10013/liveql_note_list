@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
+import { Transition } from "@headlessui/react";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/outline";
+import { XIcon } from "@heroicons/react/solid";
 import {
   QueryClient,
   QueryClientProvider,
@@ -1098,29 +1101,57 @@ function SimpleFormExample() {
   );
 }
 
-function PageHeadingExample() {
+function Notification({ message, show, setShow }) {
   return (
-    <div className="md:flex md:items-center md:justify-between">
-      <div className="flex-1 min-w-0">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          Back End Developer
-        </h2>
+    <>
+      {/* Global notification live region, render this permanently at the end of the document */}
+      <div
+        aria-live="assertive"
+        className="fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:p-6 sm:items-start"
+      >
+        <div className="w-full flex flex-col items-center space-y-4 sm:items-end">
+          {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
+          <Transition
+            show={show}
+            as={Fragment}
+            enter="transform ease-out duration-300 transition"
+            enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+            enterTo="translate-y-0 opacity-100 sm:translate-x-0"
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+              <div className="p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <XCircleIcon
+                      className="h-6 w-6 text-red-400"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="ml-3 w-0 flex-1 pt-0.5">
+                    <p className="text-sm font-medium text-gray-900">Error</p>
+                    <p className="mt-1 text-sm text-gray-500">{message}</p>
+                  </div>
+                  <div className="ml-4 flex-shrink-0 flex">
+                    <button
+                      className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      onClick={() => {
+                        setShow(false);
+                      }}
+                    >
+                      <span className="sr-only">Close</span>
+                      <XIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
       </div>
-      <div className="mt-4 flex md:mt-0 md:ml-4">
-        <button
-          type="button"
-          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Publish
-        </button>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -1136,6 +1167,13 @@ function Content() {
   const [notes, setNotes] = useState([]);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   const [selection, setSelection] = useState({});
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [showNotification, setShowNotification] = useState(true);
+
+  const onReactQueryError = (error) => {
+    setNotificationMessage(error.message);
+    setShowNotification(true);
+  };
 
   const updateNote = (rowIndex, columnId, value) => {
     setSkipPageReset(true); // Turn on flag to not reset page
@@ -1165,16 +1203,15 @@ function Content() {
   }, [notes]);
 
   const queryClient = useQueryClient();
-  const {
-    isLoading,
-    error,
-    data: queryData,
-    status,
-    refetch,
-  } = useQuery("selectedTrackDetailClip", querySelectedTrackDetailClip, {
-    refetchOnWindowFocus: false,
-    enabled: false,
-  });
+  const { data: queryData, refetch } = useQuery(
+    "selectedTrackDetailClip",
+    querySelectedTrackDetailClip,
+    {
+      refetchOnWindowFocus: false,
+      enabled: false,
+      onError: onReactQueryError,
+    }
+  );
   useEffect(() => {
     if (queryData) {
       setData(queryData);
@@ -1189,8 +1226,6 @@ function Content() {
   const mutatationStart = useMutation(mutateStart);
   const mutatationStop = useMutation(mutateStop);
 
-  // if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
   return (
     <>
       <div className="md:flex md:items-center md:justify-between">
@@ -1292,9 +1327,14 @@ function Content() {
           </div>
         ) : (
           <div>
-            <h2>No clip selected.</h2>
+            <h2>No clip selected or fetched.</h2>
           </div>
         )}
+        <Notification
+          message={notificationMessage}
+          show={showNotification}
+          setShow={setShowNotification}
+        />
         {/* <ReactQueryDevtools initialIsOpen /> */}
       </div>
     </>
