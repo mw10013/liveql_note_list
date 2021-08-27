@@ -1255,66 +1255,51 @@ function Content() {
             <h1>{data.live_set.view.selected_track.name}</h1>
             <h2>{data.live_set.view.detail_clip.name}</h2>
             <div>
-              {mutationReplaceAllNotes.isLoading ? (
-                "Replacing..."
-              ) : (
-                <>
-                  {mutationReplaceAllNotes.isError ? (
-                    <div>
-                      An error occurred: {mutationReplaceAllNotes.error.message}
-                    </div>
-                  ) : null}
-                  {mutationReplaceAllNotes.isSuccess ? (
-                    <div>All notes replaced.</div>
-                  ) : null}
-                  in between?
-                  <Button
-                    onClick={() => {
-                      mutationReplaceAllNotes.mutate({
-                        id: data.live_set.view.detail_clip.id,
-                        notesDictionary: {
-                          notes: notes.map(({ note_id, ...n }) => n),
-                        },
-                      });
-                    }}
-                  >
-                    Save
-                  </Button>
-                  <ButtonGroup
-                    left={{
-                      onClick: () =>
-                        mutationFire.mutate({
-                          id: data.live_set.view.detail_clip.id,
-                        }),
-                      children: "Fire",
-                    }}
-                    middle={{
-                      onClick: () => {
-                        mutatationStart.mutate({ id: data.live_set.id });
-                      },
-                      children: "Start",
-                    }}
-                    right={{
-                      onClick: () => {
-                        mutatationStop.mutate({ id: data.live_set.id });
-                      },
-                      children: "Stop",
-                    }}
-                  />
-                  <Button
-                    disabled={Object.keys(selection).length === 0}
-                    onClick={() => {
-                      applyToNotes((notes) => {
-                        return notes.filter(
-                          (el, index) => !selection.hasOwnProperty(index)
-                        );
-                      });
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
+              <Button
+                onClick={() => {
+                  mutationReplaceAllNotes.mutate({
+                    id: data.live_set.view.detail_clip.id,
+                    notesDictionary: {
+                      notes: notes.map(({ note_id, ...n }) => n),
+                    },
+                  });
+                }}
+              >
+                Save
+              </Button>
+              <ButtonGroup
+                left={{
+                  onClick: () =>
+                    mutationFire.mutate({
+                      id: data.live_set.view.detail_clip.id,
+                    }),
+                  children: "Fire",
+                }}
+                middle={{
+                  onClick: () => {
+                    mutatationStart.mutate({ id: data.live_set.id });
+                  },
+                  children: "Start",
+                }}
+                right={{
+                  onClick: () => {
+                    mutatationStop.mutate({ id: data.live_set.id });
+                  },
+                  children: "Stop",
+                }}
+              />
+              <Button
+                disabled={Object.keys(selection).length === 0}
+                onClick={() => {
+                  applyToNotes((notes) => {
+                    return notes.filter(
+                      (el, index) => !selection.hasOwnProperty(index)
+                    );
+                  });
+                }}
+              >
+                Delete
+              </Button>
             </div>
             <InputSection insertNotes={insertNotes} />
             {/* <SimpleFormExample /> */}
