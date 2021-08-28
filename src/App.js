@@ -619,7 +619,7 @@ function InputSection({ insertNotes }) {
             Insert note at start. Step advances start.
           </p>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6-">
+        <div className="mt-6 flex gap-1 w-96">
           <InputField
             id="start_time"
             label="Start"
@@ -633,17 +633,17 @@ function InputSection({ insertNotes }) {
           />
           <InputField
             id="duration"
-            label="duration"
+            label="Duration"
             {...getFieldProps("duration")}
           />
           <InputField id="step" label="Step" {...getFieldProps("step")} />
-          <div>
-            <ButtonGroup
-              left={{ onClick: insert, children: "Insert" }}
-              middle={{ onClick: insertAndStep, children: "Insert+Step" }}
-              right={{ onClick: step, children: "Step" }}
-            />
-          </div>
+        </div>
+        <div>
+          <ButtonGroup
+            left={{ onClick: insert, children: "Insert" }}
+            middle={{ onClick: insertAndStep, children: "Insert+Step" }}
+            right={{ onClick: step, children: "Step" }}
+          />
         </div>
       </div>
       {/* <div className="flex gap-4">
