@@ -1256,8 +1256,6 @@ function Content() {
       <div className="">
         {data && (
           <div>
-            <h1>{data.live_set.view.selected_track.name}</h1>
-            <h2>{data.live_set.view.detail_clip.name}</h2>
             <div>
               <Button
                 onClick={() => {
@@ -1307,6 +1305,12 @@ function Content() {
             </div>
             <InputSection insertNotes={insertNotes} />
             {/* <SimpleFormExample /> */}
+            <p className="mt-1 text-sm text-gray-600">
+              {data.live_set.view.detail_clip.name === ""
+                ? "Untitled"
+                : data.live_set.view.detail_clip.name}{" "}
+              clip on {data.live_set.view.selected_track.name} track
+            </p>
             <Table
               columns={columns}
               data={notes}
