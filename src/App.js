@@ -1256,7 +1256,7 @@ function Content() {
       <div className="">
         {data && (
           <div>
-            <div>
+            <div className="flex gap-4">
               <Button
                 onClick={() => {
                   mutationReplaceAllNotes.mutate({
