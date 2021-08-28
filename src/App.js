@@ -1195,7 +1195,7 @@ function Content() {
     );
   };
 
-  // After data chagnes, we turn the flag back off
+  // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
   // editing it, the page is reset
   React.useEffect(() => {
@@ -1203,23 +1203,27 @@ function Content() {
   }, [notes]);
 
   const queryClient = useQueryClient();
-  const { data: queryData, refetch } = useQuery(
+  const { refetch } = useQuery(
     "selectedTrackDetailClip",
     querySelectedTrackDetailClip,
     {
       refetchOnWindowFocus: false,
       enabled: false,
+      onSuccess: (queryData) => {
+        if (queryData === null) return; // React query seems to null out data enabled: false queries.
+        if (queryData?.live_set?.view?.detail_clip?.is_midi_clip === 1) {
+          setData(queryData);
+          setNotes(queryData.live_set.view.detail_clip.notes);
+        } else {
+          setData(null);
+          setNotes(null);
+          setNotificationMessage("No single midi clip selected in Live.");
+          setShowNotification(true);
+        }
+      },
       onError: onReactQueryError,
     }
   );
-  useEffect(() => {
-    if (queryData) {
-      setData(queryData);
-      if (queryData.live_set.view.detail_clip) {
-        setNotes(queryData.live_set.view.detail_clip.notes);
-      }
-    }
-  }, [queryData]);
 
   const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes, {
     onError: onReactQueryError,
@@ -1250,7 +1254,7 @@ function Content() {
         </Button>
       </div>
       <div className="">
-        {data && data.live_set.view.detail_clip ? (
+        {data && (
           <div>
             <h1>{data.live_set.view.selected_track.name}</h1>
             <h2>{data.live_set.view.detail_clip.name}</h2>
@@ -1316,10 +1320,6 @@ function Content() {
               <pre>{JSON.stringify(data, null, 2)}</pre>
               <pre>{JSON.stringify({ selection }, null, 2)}</pre>
             </div>
-          </div>
-        ) : (
-          <div>
-            <h2>No clip selected or fetched.</h2>
           </div>
         )}
         <Notification
