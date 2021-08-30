@@ -1306,10 +1306,8 @@ function Content() {
               </Button>
             </div>
             <p className="mt-1 text-sm text-gray-600">
-              {data.live_set.view.detail_clip.name
-                ? data.live_set.view.detail_clip.name
-                : "Untitled"}{" "}
-              clip on {data.live_set.view.selected_track.name} track
+              {data.live_set.view.detail_clip.name || "Untitled"} clip on{" "}
+              {data.live_set.view.selected_track.name} track
             </p>
             <Table
               columns={columns}
