@@ -1256,6 +1256,8 @@ function Content() {
       <div className="">
         {data && (
           <div>
+            <InputSection insertNotes={insertNotes} />
+
             <div className="flex gap-4">
               <Button
                 onClick={() => {
@@ -1303,7 +1305,6 @@ function Content() {
                 Delete
               </Button>
             </div>
-            <InputSection insertNotes={insertNotes} />
             <p className="mt-1 text-sm text-gray-600">
               {data.live_set.view.detail_clip.name
                 ? data.live_set.view.detail_clip.name
