@@ -1,13 +1,11 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Disclosure, Transition } from "@headlessui/react";
 import {
-  CheckCircleIcon,
   XCircleIcon,
-  BellIcon,
   MenuIcon,
   XIcon as XIconOutline,
 } from "@heroicons/react/outline";
-import { XIcon as XIconSolid } from "@heroicons/react/solid";
+import { XIcon as XIconSolid, ChevronUpIcon } from "@heroicons/react/solid";
 import {
   QueryClient,
   QueryClientProvider,
@@ -615,48 +613,52 @@ function InputSection({ insertNotes }) {
   });
 
   return (
-    <>
-      <div>
-        <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Insert Note
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Insert note at start. Step advances start.
-          </p>
-        </div>
-        <div className="mt-6 flex gap-1 w-96">
-          <InputField
-            id="start_time"
-            label="Start"
-            {...getFieldProps("start_time")}
-          />
-          <InputField id="pitch" label="Pitch" {...getFieldProps("pitch")} />
-          <InputField
-            id="velocity"
-            label="Velocity"
-            {...getFieldProps("velocity")}
-          />
-          <InputField
-            id="duration"
-            label="Duration"
-            {...getFieldProps("duration")}
-          />
-          <InputField id="step" label="Step" {...getFieldProps("step")} />
-        </div>
-        <div>
-          <ButtonGroup
-            left={{ onClick: insert, children: "Insert" }}
-            middle={{ onClick: insertAndStep, children: "Insert+Step" }}
-            right={{ onClick: step, children: "Step" }}
-          />
-        </div>
-      </div>
-      {/* <div className="flex gap-4">
-        <pre>{JSON.stringify(values, null, 2)}</pre>
-        <pre>{JSON.stringify(commitedValues, null, 2)}</pre>
-      </div> */}
-    </>
+    <Disclosure as="div">
+      {({ open }) => (
+        <>
+          <Disclosure.Button className="text-lg leading-6 font-medium text-gray-900">
+            <span>Insert Note</span>
+            <ChevronUpIcon
+              className={`${
+                open ? "transform rotate-180" : ""
+              } w-5 h-5 text-purple-500`}
+            />
+          </Disclosure.Button>
+          <Disclosure.Panel>
+            <div className="mt-6 flex gap-1 w-96">
+              <InputField
+                id="start_time"
+                label="Start"
+                {...getFieldProps("start_time")}
+              />
+              <InputField
+                id="pitch"
+                label="Pitch"
+                {...getFieldProps("pitch")}
+              />
+              <InputField
+                id="velocity"
+                label="Velocity"
+                {...getFieldProps("velocity")}
+              />
+              <InputField
+                id="duration"
+                label="Duration"
+                {...getFieldProps("duration")}
+              />
+              <InputField id="step" label="Step" {...getFieldProps("step")} />
+            </div>
+            <div>
+              <ButtonGroup
+                left={{ onClick: insert, children: "Insert" }}
+                middle={{ onClick: insertAndStep, children: "Insert+Step" }}
+                right={{ onClick: step, children: "Step" }}
+              />
+            </div>
+          </Disclosure.Panel>
+        </>
+      )}
+    </Disclosure>
   );
 }
 
@@ -901,14 +903,13 @@ const navigation = [
   { name: "Calendar", href: "#", current: false },
 ];
 
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 function StackedExample() {
   return (
-    <div className="min-h-screen- bg-white">
+    <div className="bg-white">
       <Disclosure as="nav" className="bg-white border-b border-gray-200">
         {({ open }) => (
           <>
