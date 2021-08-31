@@ -616,12 +616,12 @@ function InputSection({ insertNotes }) {
     <Disclosure as="div">
       {({ open }) => (
         <>
-          <Disclosure.Button className="text-lg leading-6 font-medium text-gray-900">
+          <Disclosure.Button className="text-sm leading-6 font-medium text-gray-900 flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-purple-900 bg-purple-100 rounded-lg hover:bg-purple-200 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
             <span>Insert Note</span>
             <ChevronUpIcon
               className={`${
                 open ? "transform rotate-180" : ""
-              } w-5 h-5 text-purple-500`}
+              } w-5 h-5 text-gray-900`}
             />
           </Disclosure.Button>
           <Disclosure.Panel>
@@ -907,71 +907,10 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function StackedExample() {
-  return (
-    <div className="bg-white">
-      <Disclosure as="nav" className="bg-white border-b border-gray-200">
-        {({ open }) => (
-          <>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-16">
-                <div className="flex">
-                  <div className="flex-shrink-0 flex items-center">
-                    <img
-                      className="block h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
-                      alt="Workflow"
-                    />
-                  </div>
-                </div>
-                <div className="-mr-2 flex items-center">
-                  {/* Mobile menu button */}
-                  <Disclosure.Button className="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <span className="sr-only">Open main menu</span>
-                    {open ? (
-                      <XIconOutline
-                        className="block h-6 w-6"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <MenuIcon className="block h-6 w-6" aria-hidden="true" />
-                    )}
-                  </Disclosure.Button>
-                </div>
-              </div>
-            </div>
-
-            <Disclosure.Panel>
-              <div className="pt-2 pb-3 space-y-1">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800",
-                      "block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-                    )}
-                    aria-current={item.current ? "page" : undefined}
-                  >
-                    {item.name}
-                  </a>
-                ))}
-              </div>
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-    </div>
-  );
-}
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div>
-        <StackedExample />
         <Content />
       </div>
     </QueryClientProvider>
