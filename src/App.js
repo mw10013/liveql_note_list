@@ -1,11 +1,7 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
-import {
-  XCircleIcon,
-  MenuIcon,
-  XIcon as XIconOutline,
-} from "@heroicons/react/outline";
-import { XIcon as XIconSolid, ChevronUpIcon } from "@heroicons/react/solid";
+import { XCircleIcon } from "@heroicons/react/outline";
+import { XIcon, ChevronUpIcon } from "@heroicons/react/solid";
 import {
   QueryClient,
   QueryClientProvider,
@@ -18,6 +14,10 @@ import { request, gql } from "graphql-request";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
 const Button = ({ children, ...props }) => {
   return (
@@ -289,8 +289,11 @@ const EditableCell = ({
   return (
     <input
       type="text"
-      // className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-      className="focus:shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 border-opacity-0 rounded-md"
+      className={`block w-full text-sm text-right ${
+        id === "start_time" || id === "pitch"
+          ? "font-medium text-gray-900"
+          : "text-gray-500"
+      } focus:shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 border-opacity-0 rounded-md`}
       value={value}
       onChange={onChange}
       onBlur={onBlur}
@@ -303,94 +306,6 @@ const EditableCell = ({
 const defaultColumn = {
   Cell: EditableCell,
 };
-
-/* This example requires Tailwind CSS v2.0+ */
-const people = [
-  {
-    name: "Jane Cooper",
-    title: "Regional Paradigm Technician",
-    role: "Admin",
-    email: "jane.cooper@example.com",
-  },
-  {
-    name: "John Cooper",
-    title: "Regional Paradigm Technician",
-    role: "Admin",
-    email: "john.cooper@example.com",
-  },
-];
-
-function TableExample() {
-  return (
-    <div className="flex flex-col p-2">
-      <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Title
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Email
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Role
-                  </th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">Edit</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {people.map((person) => (
-                  <tr key={person.email}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {person.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.role}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a
-                        href="#"
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        Edit
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   const {
@@ -442,7 +357,7 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
                       <th
                         className={`px-6 ${
                           column.id === "selection" ? "py-0" : "py-3"
-                        } text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}
+                        } text-left- text-xs font-medium text-gray-500 uppercase tracking-wider`}
                         {...column.getHeaderProps()}
                       >
                         {column.render("Header")}
@@ -703,7 +618,7 @@ function Notification({ message, show, setShow }) {
                       }}
                     >
                       <span className="sr-only">Close</span>
-                      <XIconSolid className="h-5 w-5" aria-hidden="true" />
+                      <XIcon className="h-5 w-5" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -877,7 +792,6 @@ function Content() {
               skipPageReset={skipPageReset}
               setSelection={setSelection}
             />
-            <TableExample />
             <div className="flex gap-4">
               <pre>{JSON.stringify(notes, null, 2)}</pre>
               <pre>{JSON.stringify(data, null, 2)}</pre>
@@ -894,17 +808,6 @@ function Content() {
       </div>
     </>
   );
-}
-
-const navigation = [
-  { name: "Dashboard", href: "#", current: true },
-  { name: "Team", href: "#", current: false },
-  { name: "Projects", href: "#", current: false },
-  { name: "Calendar", href: "#", current: false },
-];
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
 }
 
 function App() {
