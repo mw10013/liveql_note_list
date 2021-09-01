@@ -616,7 +616,7 @@ function InputSection({ insertNotes }) {
     <Disclosure as="div">
       {({ open }) => (
         <>
-          <Disclosure.Button className="text-sm leading-6 font-medium text-gray-900 flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-purple-900 bg-purple-100 rounded-lg hover:bg-purple-200 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+          <Disclosure.Button className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             <span>Insert Note</span>
             <ChevronUpIcon
               className={`${
