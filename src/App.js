@@ -528,7 +528,7 @@ function InputSection({ insertNotes }) {
   });
 
   return (
-    <Disclosure as="div">
+    <Disclosure as="div" className="mt-2">
       {({ open }) => (
         <>
           <Disclosure.Button className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -734,7 +734,7 @@ function Content() {
           <div>
             <InputSection insertNotes={insertNotes} />
 
-            <div className="flex gap-4">
+            <div className="mt-3 flex gap-4">
               <Button
                 onClick={() => {
                   mutationReplaceAllNotes.mutate({
@@ -792,11 +792,11 @@ function Content() {
               skipPageReset={skipPageReset}
               setSelection={setSelection}
             />
-            <div className="flex gap-4">
+            {/* <div className="flex gap-4">
               <pre>{JSON.stringify(notes, null, 2)}</pre>
               <pre>{JSON.stringify(data, null, 2)}</pre>
               <pre>{JSON.stringify({ selection }, null, 2)}</pre>
-            </div>
+            </div> */}
           </div>
         )}
         <Notification
@@ -810,46 +810,11 @@ function Content() {
   );
 }
 
-function PageHeadingExample() {
-  return (
-    <div className="md:flex md:items-center md:justify-between">
-      <div className="flex-1 min-w-0">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          Back End Developer
-        </h2>
-      </div>
-      <div className="mt-4 flex md:mt-0 md:ml-4">
-        <button
-          type="button"
-          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Publish
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div>
-        <div className="p-8 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <PageHeadingExample />
-          </div>
-        </div>
-        <div className="p-8 bg-blue-200">
-          <div className="max-w-7xl mx-auto">
-            <Content />
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto p-8 bg-white">
+        <Content />
       </div>
     </QueryClientProvider>
   );
