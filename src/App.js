@@ -540,7 +540,7 @@ function InputSection({ insertNotes }) {
             />
           </Disclosure.Button>
           <Disclosure.Panel>
-            <div className="mt-6 flex gap-1 w-96">
+            <div className="mt-3 flex gap-1 w-96">
               <InputField
                 id="start_time"
                 label="Start"
@@ -563,7 +563,7 @@ function InputSection({ insertNotes }) {
               />
               <InputField id="step" label="Step" {...getFieldProps("step")} />
             </div>
-            <div>
+            <div className="mt-3">
               <ButtonGroup
                 left={{ onClick: insert, children: "Insert" }}
                 middle={{ onClick: insertAndStep, children: "Insert+Step" }}
@@ -716,9 +716,15 @@ function Content() {
     <>
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+          <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
             Liveql Note List
-          </h2>
+          </h1>
+          {data && (
+            <p className="text-sm font-medium text-gray-500">
+              {data.live_set.view.detail_clip.name || "Untitled"} on{" "}
+              {data.live_set.view.selected_track.name} track
+            </p>
+          )}
         </div>
         <Button
           onClick={(e) => {
@@ -729,83 +735,78 @@ function Content() {
           Fetch
         </Button>
       </div>
-      <div className="">
-        {data && (
-          <div>
-            <InputSection insertNotes={insertNotes} />
+      {data && (
+        <div>
+          <InputSection insertNotes={insertNotes} />
 
-            <div className="mt-3 flex gap-4">
-              <Button
-                onClick={() => {
-                  mutationReplaceAllNotes.mutate({
+          <div className="mt-2 flex gap-4">
+            <Button
+              onClick={() => {
+                mutationReplaceAllNotes.mutate({
+                  id: data.live_set.view.detail_clip.id,
+                  notesDictionary: {
+                    notes: notes.map(({ note_id, ...n }) => n),
+                  },
+                });
+              }}
+            >
+              Save
+            </Button>
+            <ButtonGroup
+              left={{
+                onClick: () =>
+                  mutationFire.mutate({
                     id: data.live_set.view.detail_clip.id,
-                    notesDictionary: {
-                      notes: notes.map(({ note_id, ...n }) => n),
-                    },
-                  });
-                }}
-              >
-                Save
-              </Button>
-              <ButtonGroup
-                left={{
-                  onClick: () =>
-                    mutationFire.mutate({
-                      id: data.live_set.view.detail_clip.id,
-                    }),
-                  children: "Fire",
-                }}
-                middle={{
-                  onClick: () => {
-                    mutatationStart.mutate({ id: data.live_set.id });
-                  },
-                  children: "Start",
-                }}
-                right={{
-                  onClick: () => {
-                    mutatationStop.mutate({ id: data.live_set.id });
-                  },
-                  children: "Stop",
-                }}
-              />
-              <Button
-                disabled={Object.keys(selection).length === 0}
-                onClick={() => {
-                  applyToNotes((notes) => {
-                    return notes.filter(
-                      (el, index) => !selection.hasOwnProperty(index)
-                    );
-                  });
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-            <p className="mt-1 text-sm text-gray-600">
-              {data.live_set.view.detail_clip.name || "Untitled"} clip on{" "}
-              {data.live_set.view.selected_track.name} track
-            </p>
-            <Table
-              columns={columns}
-              data={notes}
-              updateNote={updateNote}
-              skipPageReset={skipPageReset}
-              setSelection={setSelection}
+                  }),
+                children: "Fire",
+              }}
+              middle={{
+                onClick: () => {
+                  mutatationStart.mutate({ id: data.live_set.id });
+                },
+                children: "Start",
+              }}
+              right={{
+                onClick: () => {
+                  mutatationStop.mutate({ id: data.live_set.id });
+                },
+                children: "Stop",
+              }}
             />
-            {/* <div className="flex gap-4">
+            <Button
+              disabled={Object.keys(selection).length === 0}
+              onClick={() => {
+                applyToNotes((notes) => {
+                  return notes.filter(
+                    (el, index) => !selection.hasOwnProperty(index)
+                  );
+                });
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+
+          <Table
+            columns={columns}
+            data={notes}
+            updateNote={updateNote}
+            skipPageReset={skipPageReset}
+            setSelection={setSelection}
+          />
+          {/* <div className="flex gap-4">
               <pre>{JSON.stringify(notes, null, 2)}</pre>
               <pre>{JSON.stringify(data, null, 2)}</pre>
               <pre>{JSON.stringify({ selection }, null, 2)}</pre>
             </div> */}
-          </div>
-        )}
-        <Notification
-          message={notificationMessage}
-          show={showNotification}
-          setShow={setShowNotification}
-        />
-        {/* <ReactQueryDevtools initialIsOpen /> */}
-      </div>
+        </div>
+      )}
+      <Notification
+        message={notificationMessage}
+        show={showNotification}
+        setShow={setShowNotification}
+      />
+      {/* <ReactQueryDevtools initialIsOpen /> */}
     </>
   );
 }
