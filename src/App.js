@@ -15,15 +15,20 @@ import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
 
+// TODO: disclosure box, table; dupes, pagination, disabled button
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const Button = ({ children, ...props }) => {
+const Button = ({ children, disabled, ...props }) => {
   return (
     <button
       type="button"
-      className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      className={`${
+        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+      } inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+      disabled={disabled}
       {...props}
     >
       {children}
