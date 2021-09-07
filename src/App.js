@@ -312,37 +312,6 @@ const defaultColumn = {
   Cell: EditableCell,
 };
 
-function PaginationExample() {
-  return (
-    <nav
-      className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-      aria-label="Pagination"
-    >
-      <div className="hidden sm:block">
-        <p className="text-sm text-gray-700">
-          Showing <span className="font-medium">1</span> to{" "}
-          <span className="font-medium">10</span> of{" "}
-          <span className="font-medium">20</span> results
-        </p>
-      </div>
-      <div className="flex-1 flex justify-between sm:justify-end">
-        <a
-          href="#"
-          className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          Previous
-        </a>
-        <a
-          href="#"
-          className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          Next
-        </a>
-      </div>
-    </nav>
-  );
-}
-
 function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   const {
     getTableProps,
@@ -352,21 +321,16 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
     page,
     canPreviousPage,
     canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
     nextPage,
     previousPage,
-    setPageSize,
     state: { pageIndex, pageSize, selectedRowIds },
   } = useTable(
     {
       columns,
       data,
-      initialState: { pageSize: 1000 }, // HACK: handle > 1000 items.
+      initialState: { pageSize: 5 },
       defaultColumn,
-      // use the skipPageReset option to disable page resetting temporarily
-      autoResetPage: !skipPageReset,
+      autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
       updateNote,
     },
     usePagination,
@@ -428,7 +392,29 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
           </div>
         </div>
       </div>
-      <PaginationExample />
+      <nav
+        className="bg-white px-4 py-3 flex items-center justify-between sm:px-6"
+        aria-label="Pagination"
+      >
+        <div className="hidden sm:block">
+          <p className="text-sm text-gray-700">
+            Showing{" "}
+            <span className="font-medium">{pageIndex * pageSize + 1}</span> to{" "}
+            <span className="font-medium">
+              {pageIndex * pageSize + page.length}
+            </span>{" "}
+            of <span className="font-medium">{data.length}</span> notes
+          </p>
+        </div>
+        <div className="flex-1 flex justify-between sm:justify-end sm:gap-3">
+          <Button disabled={!canPreviousPage} onClick={previousPage}>
+            Previous
+          </Button>
+          <Button disabled={!canNextPage} onClick={nextPage}>
+            Next
+          </Button>
+        </div>
+      </nav>
     </div>
   );
 }
