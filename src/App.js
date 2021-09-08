@@ -146,7 +146,7 @@ function mutateReplaceAllNotes(variables) {
         clip_remove_notes_extended(
           id: $id
           from_pitch: 0
-          pitch_span: 127
+          pitch_span: 128
           from_time: 0
           time_span: 1000000
         ) {
