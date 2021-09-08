@@ -15,7 +15,7 @@ import { useTable, usePagination, useRowSelect } from "react-table";
 import styled from "styled-components";
 import update from "immutability-helper";
 
-// TODO: disclosure box, table; dupes, pagination
+// TODO: disclosure box, table; dupes, pagination reset
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -328,7 +328,7 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
     {
       columns,
       data,
-      initialState: { pageSize: 5 },
+      initialState: { pageSize: 100 },
       defaultColumn,
       autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
       updateNote,
@@ -740,7 +740,10 @@ function Content() {
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            Liveql Note List
+            Liveql Note List{" "}
+            <span className="text-gray-400 text-xs">
+              {process.env.REACT_APP_VERSION}
+            </span>
           </h1>
           {data && (
             <p className="text-sm font-medium text-gray-500">
@@ -758,6 +761,9 @@ function Content() {
           Fetch
         </Button>
       </div>
+      {/* <div>
+        <pre>{JSON.stringify(process.env, null, 2)}</pre>
+      </div> */}
       {data && (
         <div>
           <InputSection insertNotes={insertNotes} />
