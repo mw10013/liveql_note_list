@@ -708,6 +708,7 @@ function Content() {
     {
       refetchOnWindowFocus: false,
       enabled: false,
+      retry: false,
       onSuccess: (queryData) => {
         if (queryData === null) return; // React query seems to null out data enabled: false queries.
         if (queryData?.live_set?.view?.detail_clip?.is_midi_clip === 1) {
