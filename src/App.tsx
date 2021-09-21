@@ -3,14 +3,25 @@ import { Disclosure, Transition } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/outline";
 import { XIcon, ChevronUpIcon } from "@heroicons/react/solid";
 import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  useLazyQuery,
+  gql,
+} from "@apollo/client";
+import {
   QueryClient,
   QueryClientProvider,
   useQueryClient,
   useQuery,
   useMutation,
 } from "react-query";
+import {
+  SelectedTrackDetailClip,
+  SelectedTrackDetailClip_live_set_view_detail_clip_notes,
+} from "./__generated__/SelectedTrackDetailClip";
 // import { ReactQueryDevtools } from "react-query/devtools";
-import { request, gql } from "graphql-request";
+
 import { useTable, usePagination, useRowSelect } from "react-table";
 // import styled from "styled-components";
 import update from "immutability-helper";
@@ -44,7 +55,7 @@ type ButtonGroupProps = {
   left: React.ComponentPropsWithoutRef<"button">;
   middle: React.ComponentPropsWithoutRef<"button">;
   right: React.ComponentPropsWithoutRef<"button">;
-}
+};
 
 function ButtonGroup({
   left: { children: leftChildren, ...leftProps },
@@ -128,50 +139,47 @@ const IndeterminateCheckbox = ({
   );
 };
 
-const queryClient = new QueryClient();
-const liveqlEndpoint = "http://localhost:4000/";
+const apolloClient = new ApolloClient({
+  uri: "http://localhost:4000/",
+  cache: new InMemoryCache(),
+});
 
-function querySelectedTrackDetailClip() {
-  return request(
-    liveqlEndpoint,
-    gql`
-      query SelectedTrackDetailClip {
-        live_set {
+const GET_SELECTED_TRACK_DETAIL_CLIP = gql`
+  query SelectedTrackDetailClip {
+    live_set {
+      id
+      view {
+        selected_track {
           id
-          view {
-            selected_track {
-              id
-              name
-            }
-            detail_clip {
-              id
-              name
-              start_time
-              end_time
-              length
-              signature_numerator
-              signature_denominator
-              is_midi_clip
-              is_arrangement_clip
-              notes {
-                start_time
-                pitch
-                velocity
-                duration
-                probability
-                velocity_deviation
-                release_velocity
-                mute
-                note_id
-              }
-            }
+          name
+        }
+        detail_clip {
+          id
+          name
+          start_time
+          end_time
+          length
+          signature_numerator
+          signature_denominator
+          is_midi_clip
+          is_arrangement_clip
+          notes {
+            start_time
+            pitch
+            velocity
+            duration
+            probability
+            velocity_deviation
+            release_velocity
+            mute
+            note_id
           }
         }
       }
-    `
-  );
-}
-
+    }
+  }
+`;
+/*
 // HACK: time_span is magic constant.
 function mutateReplaceAllNotes(variables) {
   return request(
@@ -250,7 +258,7 @@ function mutateFire(variables) {
     variables
   );
 }
-
+*/
 const cellConfig = {
   start_time: {
     type: "number",
@@ -302,7 +310,7 @@ function sanitizeValue(
   v = maxValue !== undefined && v > maxValue ? maxValue : v;
   return v;
 }
-
+/*
 const EditableCell = ({
   value: initialValue,
   row: { index },
@@ -355,7 +363,8 @@ const EditableCell = ({
 const defaultColumn = {
   Cell: EditableCell,
 };
-
+*/
+/*
 function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   const {
     getTableProps,
@@ -498,7 +507,7 @@ const columns = [
     accessor: "velocity_deviation",
   },
 ];
-
+*/
 const DEFAULT_NOTE = {
   start_time: 0,
   pitch: 64,
@@ -535,6 +544,7 @@ function InputField({ id, label, ...props }: InputFieldProps) {
   );
 }
 
+/*
 function InputSection({ insertNotes }) {
   const [commitedValues, setCommitedValues] = useState({
     ...DEFAULT_NOTE,
@@ -648,7 +658,7 @@ function InputSection({ insertNotes }) {
     </Disclosure>
   );
 }
-
+*/
 interface NotificationProps {
   message: string;
   show: boolean;
@@ -709,45 +719,46 @@ function Notification({ message, show, setShow }: NotificationProps) {
   );
 }
 
-function compareNotes(a, b) {
-  // start_time ascending, pitch ascending
-  if (a.start_time < b.start_time) return -1;
-  if (a.start_time > b.start_time) return 1;
-  return a.pitch - b.pitch;
-}
+// function compareNotes(a, b) {
+//   // start_time ascending, pitch ascending
+//   if (a.start_time < b.start_time) return -1;
+//   if (a.start_time > b.start_time) return 1;
+//   return a.pitch - b.pitch;
+// }
 
 function Content() {
-  const [data, setData] = useState();
-  const [notes, setNotes] = useState([]);
+  const [data, setData] = useState<SelectedTrackDetailClip>();
+  const [notes, setNotes] =
+    useState<SelectedTrackDetailClip_live_set_view_detail_clip_notes[]>();
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   const [selection, setSelection] = useState({});
   const [notificationMessage, setNotificationMessage] = useState("");
   const [showNotification, setShowNotification] = useState(false);
 
-  const onReactQueryError = (error: Error) => {
+  const onApolloError = (error: Error) => {
     setNotificationMessage(error.message);
     setShowNotification(true);
   };
 
-  const updateNote = (rowIndex, columnId, value) => {
-    setSkipPageReset(true); // Turn on flag to not reset page
-    setNotes((old) => {
-      let notes = update(old, { [rowIndex]: { [columnId]: { $set: value } } });
-      if (columnId === "start_time" || columnId === "pitch") {
-        notes.sort(compareNotes);
-      }
-      return notes;
-    });
-  };
+  // const updateNote = (rowIndex, columnId, value) => {
+  //   setSkipPageReset(true); // Turn on flag to not reset page
+  //   setNotes((old) => {
+  //     let notes = update(old, { [rowIndex]: { [columnId]: { $set: value } } });
+  //     if (columnId === "start_time" || columnId === "pitch") {
+  //       notes.sort(compareNotes);
+  //     }
+  //     return notes;
+  //   });
+  // };
 
-  const applyToNotes = (fn) =>
-    setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
+  // const applyToNotes = (fn) =>
+  //   setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
 
-  const insertNotes = (notes) => {
-    setNotes((old) =>
-      update(old, { $apply: (arr) => [...notes, ...arr] }).sort(compareNotes)
-    );
-  };
+  // const insertNotes = (notes) => {
+  //   setNotes((old) =>
+  //     update(old, { $apply: (arr) => [...notes, ...arr] }).sort(compareNotes)
+  //   );
+  // };
 
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
@@ -756,30 +767,27 @@ function Content() {
     setSkipPageReset(false);
   }, [notes]);
 
-  const queryClient = useQueryClient();
-  const { refetch } = useQuery(
-    "selectedTrackDetailClip",
-    querySelectedTrackDetailClip,
+  const [fetch, query] = useLazyQuery<SelectedTrackDetailClip>(
+    GET_SELECTED_TRACK_DETAIL_CLIP,
     {
-      refetchOnWindowFocus: false,
-      enabled: false,
-      retry: false,
-      onSuccess: (queryData) => {
-        if (queryData === null) return; // React query seems to null out data enabled: false queries.
-        if (queryData?.live_set?.view?.detail_clip?.is_midi_clip === 1) {
-          setData(queryData);
-          setNotes(queryData.live_set.view.detail_clip.notes);
+      fetchPolicy: "network-only",
+      onCompleted: (data) => {
+        console.log(data);
+        // if (data === null) return; // React query seems to null out data enabled: false queries.
+        if (data.live_set.view.detail_clip?.is_midi_clip === 1) {
+          setData(data);
+          setNotes(data.live_set.view.detail_clip.notes!);
         } else {
-          setData(null);
-          setNotes(null);
+          setData(undefined);
+          setNotes(undefined);
           setNotificationMessage("No single midi clip selected in Live.");
           setShowNotification(true);
         }
       },
-      onError: onReactQueryError,
+      onError: onApolloError,
     }
   );
-
+  /*
   const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes, {
     onError: onReactQueryError,
   });
@@ -790,7 +798,7 @@ function Content() {
   const mutatationStop = useMutation(mutateStop, {
     onError: onReactQueryError,
   });
-
+*/
   return (
     <>
       <div className="md:flex md:items-center md:justify-between">
@@ -803,24 +811,50 @@ function Content() {
           </h1>
           {data && (
             <p className="text-sm font-medium text-gray-500">
-              {data.live_set.view.detail_clip.name || "Untitled"} on{" "}
-              {data.live_set.view.selected_track.name} track
+              {data.live_set.view.detail_clip?.name ?? "Untitled"} on{" "}
+              {data.live_set.view.selected_track?.name} track
             </p>
           )}
         </div>
         <Button
           onClick={(e) => {
-            queryClient.setQueryData("selectedTrackDetailClip", null);
-            refetch({ cancelRefresh: true });
+            // queryClient.setQueryData("selectedTrackDetailClip", null);
+            fetch();
           }}
         >
           Fetch
         </Button>
       </div>
-      {/* <div>
-        <pre>{JSON.stringify(process.env, null, 2)}</pre>
-      </div> */}
       {data && (
+        <div className="flex gap-4">
+          <pre>{JSON.stringify(notes, null, 2)}</pre>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )}
+
+      <Notification
+        message={notificationMessage}
+        show={showNotification}
+        setShow={setShowNotification}
+      />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ApolloProvider client={apolloClient}>
+      <div className="max-w-7xl mx-auto p-8 bg-white">
+        <Content />
+      </div>
+    </ApolloProvider>
+  );
+}
+
+export default App;
+
+/*
+{data && (
         <div>
           <InputSection insertNotes={insertNotes} />
 
@@ -879,31 +913,6 @@ function Content() {
             skipPageReset={skipPageReset}
             setSelection={setSelection}
           />
-          {/* <div className="flex gap-4">
-              <pre>{JSON.stringify(notes, null, 2)}</pre>
-              <pre>{JSON.stringify(data, null, 2)}</pre>
-              <pre>{JSON.stringify({ selection }, null, 2)}</pre>
-            </div> */}
         </div>
       )}
-      <Notification
-        message={notificationMessage}
-        show={showNotification}
-        setShow={setShowNotification}
-      />
-      {/* <ReactQueryDevtools initialIsOpen /> */}
-    </>
-  );
-}
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <div className="max-w-7xl mx-auto p-8 bg-white">
-        <Content />
-      </div>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
+*/
