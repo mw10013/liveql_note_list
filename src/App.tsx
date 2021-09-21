@@ -763,7 +763,6 @@ function Content() {
     {
       fetchPolicy: "network-only",
       onCompleted: (data) => {
-        console.log(data);
         // if (data === null) return; // React query seems to null out data enabled: false queries.
         if (data.live_set.view.detail_clip?.is_midi_clip === 1) {
           setData(data);
