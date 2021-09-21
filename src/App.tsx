@@ -10,20 +10,11 @@ import {
   gql,
 } from "@apollo/client";
 import {
-  QueryClient,
-  QueryClientProvider,
-  useQueryClient,
-  useQuery,
-  useMutation,
-} from "react-query";
-import {
   SelectedTrackDetailClip,
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
-// import { ReactQueryDevtools } from "react-query/devtools";
 
 import { useTable, usePagination, useRowSelect } from "react-table";
-// import styled from "styled-components";
 import update from "immutability-helper";
 
 // TODO: disclosure box, table; dupes, pagination reset
