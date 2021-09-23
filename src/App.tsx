@@ -14,7 +14,7 @@ import {
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
 import update from "immutability-helper";
-import { useTable, usePagination, useRowSelect } from "react-table";
+import { useTable, usePagination, useRowSelect, Column } from "react-table";
 
 // TODO: disclosure box, table; dupes, pagination reset
 
@@ -479,7 +479,16 @@ type TableTypeWorkaround<T extends Object> = TableInstance<T> & {
 
 as TableInstance<SelectedTrackDetailClip_live_set_view_detail_clip_notes>
 */
-function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
+
+interface TableProps {
+  columns: readonly Column<object>[];
+  data: readonly SelectedTrackDetailClip_live_set_view_detail_clip_notes[];
+}
+
+function Table({
+  columns,
+  data /* updateNote, skipPageReset, setSelection */,
+}: TableProps) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -497,16 +506,16 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
       data,
       initialState: { pageSize: 100 },
       // defaultColumn,
-      autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
-      updateNote,
+      // autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
+      // updateNote,
     },
     usePagination
     // useRowSelect // After pagination.
   );
 
-  useEffect(() => {
-    setSelection(selectedRowIds);
-  }, [setSelection, selectedRowIds]);
+  // useEffect(() => {
+  //   setSelection(selectedRowIds);
+  // }, [setSelection, selectedRowIds]);
 
   return (
     <div className="flex flex-col p-2">
@@ -940,10 +949,19 @@ function Content() {
           Fetch
         </Button>
       </div>
-      {data && (
-        <div className="flex gap-4">
-          <pre>{JSON.stringify(notes, null, 2)}</pre>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
+      {data && notes && (
+        <div>
+          <Table
+            columns={columns}
+            data={notes}
+            // updateNote={updateNote}
+            // skipPageReset={skipPageReset}
+            // setSelection={setSelection}
+          />
+          <div className="flex gap-4">
+            <pre>{JSON.stringify(notes, null, 2)}</pre>
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+          </div>
         </div>
       )}
 
