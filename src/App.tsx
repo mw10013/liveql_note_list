@@ -1,4 +1,10 @@
-import React, { useEffect, useState, Fragment } from "react";
+import React, {
+  useEffect,
+  useState,
+  Fragment,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/outline";
 import { XIcon, ChevronUpIcon } from "@heroicons/react/solid";
@@ -14,7 +20,13 @@ import {
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
 import update from "immutability-helper";
-import { useTable, usePagination, useRowSelect, Column } from "react-table";
+import {
+  useTable,
+  usePagination,
+  useRowSelect,
+  Column,
+  UseRowSelectState,
+} from "react-table";
 
 // TODO: disclosure box, table; dupes, pagination reset
 
@@ -463,31 +475,18 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
 }
 */
 
-/*
-type TableTypeWorkaround<T extends Object> = TableInstance<T> & {
-  page: Array<Row<T>>;
-  canPreviousPage: boolean;
-  canNextPage: boolean;
-  previousPage: () => void;
-  nextPage: () => void;
-  state: {
-    pageIndex: number;
-    pageSize: number;
-    selectedRowIds: Record<string, boolean>;
-  };
-};
-
-as TableInstance<SelectedTrackDetailClip_live_set_view_detail_clip_notes>
-*/
+type SelectedRowIds = UseRowSelectState<{}>["selectedRowIds"];
 
 interface TableProps {
   columns: readonly Column<object>[];
   data: readonly SelectedTrackDetailClip_live_set_view_detail_clip_notes[];
+  setSelection: Dispatch<SetStateAction<SelectedRowIds>>;
 }
 
 function Table({
   columns,
-  data /* updateNote, skipPageReset, setSelection */,
+  data /* updateNote, skipPageReset */,
+  setSelection,
 }: TableProps) {
   const {
     getTableProps,
@@ -509,13 +508,13 @@ function Table({
       // autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
       // updateNote,
     },
-    usePagination
-    // useRowSelect // After pagination.
+    usePagination,
+    useRowSelect // After pagination.
   );
 
-  // useEffect(() => {
-  //   setSelection(selectedRowIds);
-  // }, [setSelection, selectedRowIds]);
+  useEffect(() => {
+    setSelection(selectedRowIds);
+  }, [setSelection, selectedRowIds]);
 
   return (
     <div className="flex flex-col p-2">
@@ -856,7 +855,11 @@ function Content() {
   const [notes, setNotes] =
     useState<SelectedTrackDetailClip_live_set_view_detail_clip_notes[]>();
   const [skipPageReset, setSkipPageReset] = React.useState(false);
-  const [selection, setSelection] = useState({});
+  // const [selection, setSelection] = useState({});
+  const [selection, setSelection] = useState<SelectedRowIds>({});
+  // const [selection, setSelection] = useState<
+  //   UseRowSelectState<{}>["selectedRowIds"]
+  // >({});
   const [notificationMessage, setNotificationMessage] = useState("");
   const [showNotification, setShowNotification] = useState(false);
 
@@ -956,7 +959,7 @@ function Content() {
             data={notes}
             // updateNote={updateNote}
             // skipPageReset={skipPageReset}
-            // setSelection={setSelection}
+            setSelection={setSelection}
           />
           <div className="flex gap-4">
             <pre>{JSON.stringify(notes, null, 2)}</pre>

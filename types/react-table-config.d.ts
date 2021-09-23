@@ -1,3 +1,4 @@
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-table
 import { MouseEventHandler } from "react";
 import {
   TableInstance,
