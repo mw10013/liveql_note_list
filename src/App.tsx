@@ -15,55 +15,6 @@ import {
 } from "./__generated__/SelectedTrackDetailClip";
 import update from "immutability-helper";
 import { useTable, usePagination, useRowSelect } from "react-table";
-import type {
-  UseTableInstanceProps,
-  UsePaginationOptions,
-  UsePaginationInstanceProps,
-  UsePaginationState,
-  UseRowSelectOptions,
-  UseRowSelectHooks,
-  UseRowSelectInstanceProps,
-  UseRowSelectState,
-  UseRowStateCellProps,
-  UseRowSelectRowProps,
-  PluginHook,
-} from "react-table";
-
-interface TableOptions<
-  D extends Record<string, unknown>
-> extends UsePaginationOptions<D>,
-    UseRowSelectOptions<D>,
-    // note that having Record here allows you to add anything to the options, this matches the spirit of the
-    // underlying js library, but might be cleaner if it's replaced by a more specific type that matches your
-    // feature set, this is a safe default.
-    Record<string, any> {}
-
-interface Hooks<D extends Record<string, unknown> = Record<string, unknown>>
-  extends UseRowSelectHooks<D> {}
-
-interface TableInstance<
-  D extends Record<string, unknown> = Record<string, unknown>
-> extends UseTableInstanceProps<D>,
-    UsePaginationInstanceProps<D>,
-    UseRowSelectInstanceProps<D> {}
-
-interface TableState<
-  D extends Record<string, unknown> = Record<string, unknown>
-> extends UsePaginationState<D>,
-    UseRowSelectState<D> {}
-
-interface Cell<
-  D extends Record<string, unknown> = Record<string, unknown>,
-  V = any
-> extends UseRowStateCellProps<D> {}
-
-interface Row<D extends Record<string, unknown> = Record<string, unknown>>
-  extends UseRowSelectRowProps<D> {}
-
-// function useTable<D extends object = {}>(
-//   options: TableOptions<D>,
-//   ...plugins: Array<PluginHook<D>>
-// ): TableInstance<D>;
 
 // TODO: disclosure box, table; dupes, pagination reset
 
