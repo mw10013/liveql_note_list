@@ -13,9 +13,57 @@ import {
   SelectedTrackDetailClip,
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
-
-import { useTable, usePagination, useRowSelect } from "react-table";
 import update from "immutability-helper";
+import { useTable, usePagination, useRowSelect } from "react-table";
+import type {
+  UseTableInstanceProps,
+  UsePaginationOptions,
+  UsePaginationInstanceProps,
+  UsePaginationState,
+  UseRowSelectOptions,
+  UseRowSelectHooks,
+  UseRowSelectInstanceProps,
+  UseRowSelectState,
+  UseRowStateCellProps,
+  UseRowSelectRowProps,
+  PluginHook,
+} from "react-table";
+
+interface TableOptions<
+  D extends Record<string, unknown>
+> extends UsePaginationOptions<D>,
+    UseRowSelectOptions<D>,
+    // note that having Record here allows you to add anything to the options, this matches the spirit of the
+    // underlying js library, but might be cleaner if it's replaced by a more specific type that matches your
+    // feature set, this is a safe default.
+    Record<string, any> {}
+
+interface Hooks<D extends Record<string, unknown> = Record<string, unknown>>
+  extends UseRowSelectHooks<D> {}
+
+interface TableInstance<
+  D extends Record<string, unknown> = Record<string, unknown>
+> extends UseTableInstanceProps<D>,
+    UsePaginationInstanceProps<D>,
+    UseRowSelectInstanceProps<D> {}
+
+interface TableState<
+  D extends Record<string, unknown> = Record<string, unknown>
+> extends UsePaginationState<D>,
+    UseRowSelectState<D> {}
+
+interface Cell<
+  D extends Record<string, unknown> = Record<string, unknown>,
+  V = any
+> extends UseRowStateCellProps<D> {}
+
+interface Row<D extends Record<string, unknown> = Record<string, unknown>>
+  extends UseRowSelectRowProps<D> {}
+
+// function useTable<D extends object = {}>(
+//   options: TableOptions<D>,
+//   ...plugins: Array<PluginHook<D>>
+// ): TableInstance<D>;
 
 // TODO: disclosure box, table; dupes, pagination reset
 
@@ -462,17 +510,143 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
     </div>
   );
 }
+*/
+
+/*
+type TableTypeWorkaround<T extends Object> = TableInstance<T> & {
+  page: Array<Row<T>>;
+  canPreviousPage: boolean;
+  canNextPage: boolean;
+  previousPage: () => void;
+  nextPage: () => void;
+  state: {
+    pageIndex: number;
+    pageSize: number;
+    selectedRowIds: Record<string, boolean>;
+  };
+};
+
+as TableInstance<SelectedTrackDetailClip_live_set_view_detail_clip_notes>
+*/
+function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page,
+    canPreviousPage,
+    canNextPage,
+    nextPage,
+    previousPage,
+    state: { pageIndex, pageSize, selectedRowIds },
+  } = useTable(
+    {
+      columns,
+      data,
+      initialState: { pageSize: 100 },
+      // defaultColumn,
+      autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
+      updateNote,
+    },
+    usePagination
+    // useRowSelect // After pagination.
+  );
+
+  useEffect(() => {
+    setSelection(selectedRowIds);
+  }, [setSelection, selectedRowIds]);
+
+  return (
+    <div className="flex flex-col p-2">
+      <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <table
+              className="min-w-full divide-y divide-gray-200"
+              {...getTableProps()}
+            >
+              <thead className="bg-gray-50">
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th
+                        className={`px-6 ${
+                          column.id === "selection" ? "py-0" : "py-3"
+                        } text-left- text-xs font-medium text-gray-500 uppercase tracking-wider`}
+                        {...column.getHeaderProps()}
+                      >
+                        {column.render("Header")}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody
+                className="bg-white divide-y divide-gray-200"
+                {...getTableBodyProps()}
+              >
+                {page.map((row, i) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => {
+                        return (
+                          <td
+                            className="px-6 py-1 whitespace-nowrap text-sm font-medium text-gray-900"
+                            {...cell.getCellProps()}
+                          >
+                            {cell.render("Cell")}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <nav
+        className="bg-white px-4 py-3 flex items-center justify-between sm:px-6"
+        aria-label="Pagination"
+      >
+        <div className="hidden sm:block">
+          <p className="text-sm text-gray-700">
+            Showing{" "}
+            <span className="font-medium">{pageIndex * pageSize + 1}</span> to{" "}
+            <span className="font-medium">
+              {pageIndex * pageSize + page.length}
+            </span>{" "}
+            of <span className="font-medium">{data.length}</span> notes
+          </p>
+        </div>
+        <div className="flex-1 flex justify-between sm:justify-end sm:gap-3">
+          <Button disabled={!canPreviousPage} onClick={previousPage}>
+            Previous
+          </Button>
+          <Button disabled={!canNextPage} onClick={nextPage}>
+            Next
+          </Button>
+        </div>
+      </nav>
+    </div>
+  );
+}
 
 const columns = [
-  {
-    id: "selection",
-    Header: ({ getToggleAllPageRowsSelectedProps }) => (
-      <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
-    ),
-    Cell: ({ row }) => (
-      <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-    ),
-  },
+  // {
+  //   id: "selection",
+  //   Header: ({
+  //     getToggleAllPageRowsSelectedProps,
+  //   }: UseRowSelectInstanceProps) => (
+  //     <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+  //   ),
+  //   Cell: ({ row }) => (
+  //     <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+  //   ),
+  // },
   {
     Header: "Start",
     accessor: "start_time",
@@ -498,7 +672,7 @@ const columns = [
     accessor: "velocity_deviation",
   },
 ];
-*/
+
 const DEFAULT_NOTE = {
   start_time: 0,
   pitch: 64,
