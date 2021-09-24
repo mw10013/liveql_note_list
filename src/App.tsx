@@ -34,6 +34,8 @@ import {
 
 // TODO: disclosure box, table; dupes, pagination reset
 
+type UpdateNoteFn = (rowIndex: number, columnId: string, value: number) => void;
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
@@ -292,12 +294,16 @@ function sanitizeValue(
   return v;
 }
 
+interface EditableCellProps extends Cell {
+  updateNote: UpdateNoteFn;
+}
+
 const EditableCell = ({
   value: initialValue,
   row: { index },
   column: { id },
-}: // updateNote,
-Cell) => {
+  updateNote,
+}: EditableCellProps) => {
   const [value, setValue] = React.useState(initialValue);
 
   const onBlur = () => {
@@ -310,7 +316,7 @@ Cell) => {
       "maxValue" in config ? config.maxValue : undefined
     );
     setValue(v);
-    // updateNote(index, id, v);
+    updateNote(index, id, v);
   };
 
   const onFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
@@ -461,12 +467,14 @@ interface TableProps {
   data: readonly SelectedTrackDetailClip_live_set_view_detail_clip_notes[];
   setSelection: Dispatch<SetStateAction<SelectedRowIds>>;
   skipPageReset: boolean;
+  updateNote: UpdateNoteFn;
 }
 
 function Table({
   columns,
   data,
-  /* updateNote, */ skipPageReset,
+  updateNote,
+  skipPageReset,
   setSelection,
 }: TableProps) {
   const {
@@ -487,7 +495,7 @@ function Table({
       initialState: { pageSize: 100 },
       defaultColumn,
       autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
-      // updateNote,
+      updateNote,
     },
     usePagination,
     useRowSelect // After pagination.
@@ -824,12 +832,15 @@ function Notification({ message, show, setShow }: NotificationProps) {
   );
 }
 
-// function compareNotes(a, b) {
-//   // start_time ascending, pitch ascending
-//   if (a.start_time < b.start_time) return -1;
-//   if (a.start_time > b.start_time) return 1;
-//   return a.pitch - b.pitch;
-// }
+function compareNotes(
+  a: SelectedTrackDetailClip_live_set_view_detail_clip_notes,
+  b: SelectedTrackDetailClip_live_set_view_detail_clip_notes
+) {
+  // start_time ascending, pitch ascending
+  if (a.start_time < b.start_time) return -1;
+  if (a.start_time > b.start_time) return 1;
+  return a.pitch - b.pitch;
+}
 
 function Content() {
   const [data, setData] = useState<SelectedTrackDetailClip>();
@@ -845,16 +856,20 @@ function Content() {
     setShowNotification(true);
   };
 
-  // const updateNote = (rowIndex, columnId, value) => {
-  //   setSkipPageReset(true); // Turn on flag to not reset page
-  //   setNotes((old) => {
-  //     let notes = update(old, { [rowIndex]: { [columnId]: { $set: value } } });
-  //     if (columnId === "start_time" || columnId === "pitch") {
-  //       notes.sort(compareNotes);
-  //     }
-  //     return notes;
-  //   });
-  // };
+  const updateNote: UpdateNoteFn = (
+    rowIndex: number,
+    columnId: string,
+    value: number
+  ) => {
+    setSkipPageReset(true); // Turn on flag to not reset page
+    setNotes((old) => {
+      let notes = update(old, { [rowIndex]: { [columnId]: { $set: value } } });
+      if (columnId === "start_time" || columnId === "pitch") {
+        notes?.sort(compareNotes);
+      }
+      return notes;
+    });
+  };
 
   // const applyToNotes = (fn) =>
   //   setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
@@ -934,7 +949,7 @@ function Content() {
           <Table
             columns={columns}
             data={notes}
-            // updateNote={updateNote}
+            updateNote={updateNote}
             skipPageReset={skipPageReset}
             setSelection={setSelection}
           />
