@@ -25,7 +25,10 @@ import {
   usePagination,
   useRowSelect,
   Column,
+  Row,
+  UseRowSelectInstanceProps,
   UseRowSelectState,
+  TableToggleCommonProps,
 } from "react-table";
 
 // TODO: disclosure box, table; dupes, pagination reset
@@ -91,40 +94,15 @@ function ButtonGroup({
   );
 }
 
-// const IndeterminateCheckbox = React.forwardRef<HTMLInputElement, { indeterminate: boolean }>(
-//   ({ indeterminate, ...rest }, ref) => {
-//     const defaultRef = React.useRef<HTMLInputElement | null>(null);
-//     const resolvedRef = ref || defaultRef;
-
-//     React.useEffect(() => {
-//       resolvedRef.current.indeterminate = indeterminate;
-//     }, [resolvedRef, indeterminate]);
-
-//     return (
-//       <>
-//         <input
-//           type="checkbox"
-//           className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-//           ref={resolvedRef}
-//           {...rest}
-//         />
-//       </>
-//     );
-//   }
-// );
-
-interface IndeterminateCheckboxProps {
-  indeterminate: boolean;
-}
-
+// HACK: TableToggleCommonProps don't seem to line up with React.ComponentPropsWithoutRef<"input">
 const IndeterminateCheckbox = ({
   indeterminate,
   ...rest
-}: IndeterminateCheckboxProps) => {
+}: TableToggleCommonProps) => {
   const ref = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (ref && ref.current) {
+    if (ref && ref.current && indeterminate !== undefined) {
       ref.current.indeterminate = indeterminate;
     }
   }, [ref, indeterminate]);
@@ -475,7 +453,8 @@ function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
 }
 */
 
-type SelectedRowIds = UseRowSelectState<{}>["selectedRowIds"];
+type SelectedRowIds =
+  UseRowSelectState<SelectedTrackDetailClip_live_set_view_detail_clip_notes>["selectedRowIds"];
 
 interface TableProps {
   columns: readonly Column<object>[];
@@ -595,17 +574,17 @@ function Table({
 }
 
 const columns = [
-  // {
-  //   id: "selection",
-  //   Header: ({
-  //     getToggleAllPageRowsSelectedProps,
-  //   }: UseRowSelectInstanceProps) => (
-  //     <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
-  //   ),
-  //   Cell: ({ row }) => (
-  //     <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-  //   ),
-  // },
+  {
+    id: "selection",
+    Header: ({
+      getToggleAllPageRowsSelectedProps,
+    }: UseRowSelectInstanceProps<SelectedTrackDetailClip_live_set_view_detail_clip_notes>) => (
+      <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+    ),
+    Cell: ({ row }: { row: Row }) => (
+      <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+    ),
+  },
   {
     Header: "Start",
     accessor: "start_time",
