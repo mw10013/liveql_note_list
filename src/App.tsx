@@ -26,6 +26,7 @@ import {
   useRowSelect,
   Column,
   Row,
+  Cell,
   UseRowSelectInstanceProps,
   UseRowSelectState,
   TableToggleCommonProps,
@@ -279,7 +280,7 @@ function sanitizeValue(
   defaultValue: number,
   type: string,
   minValue: number,
-  maxValue: number
+  maxValue?: number
 ) {
   let v = type === "integer" ? parseInt(value) : Number(value);
   if (isNaN(v)) {
@@ -290,27 +291,26 @@ function sanitizeValue(
   v = maxValue !== undefined && v > maxValue ? maxValue : v;
   return v;
 }
-/*
+
 const EditableCell = ({
   value: initialValue,
   row: { index },
   column: { id },
-  updateNote,
-}) => {
+}: // updateNote,
+Cell) => {
   const [value, setValue] = React.useState(initialValue);
-  const onChange = (e) => setValue(e.target.value);
 
   const onBlur = () => {
-    const config = cellConfig[id];
+    const config = cellConfig[id as keyof typeof cellConfig];
     const v = sanitizeValue(
       value,
       initialValue,
       config.type,
       config.minValue,
-      config.maxValue
+      "maxValue" in config ? config.maxValue : undefined
     );
     setValue(v);
-    updateNote(index, id, v);
+    // updateNote(index, id, v);
   };
 
   const onFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
@@ -332,7 +332,7 @@ const EditableCell = ({
           : "text-gray-500"
       } focus:shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 border-opacity-0 rounded-md`}
       value={value}
-      onChange={onChange}
+      onChange={(e) => setValue(e.target.value)}
       onBlur={onBlur}
       onFocus={onFocus}
       onKeyDown={onKeyDown}
@@ -343,7 +343,7 @@ const EditableCell = ({
 const defaultColumn = {
   Cell: EditableCell,
 };
-*/
+
 /*
 function Table({ columns, data, updateNote, skipPageReset, setSelection }) {
   const {
@@ -460,11 +460,13 @@ interface TableProps {
   columns: readonly Column<object>[];
   data: readonly SelectedTrackDetailClip_live_set_view_detail_clip_notes[];
   setSelection: Dispatch<SetStateAction<SelectedRowIds>>;
+  skipPageReset: boolean;
 }
 
 function Table({
   columns,
-  data /* updateNote, skipPageReset */,
+  data,
+  /* updateNote, */ skipPageReset,
   setSelection,
 }: TableProps) {
   const {
@@ -483,8 +485,8 @@ function Table({
       columns,
       data,
       initialState: { pageSize: 100 },
-      // defaultColumn,
-      // autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
+      defaultColumn,
+      autoResetPage: !skipPageReset, // skipPageReset to disable page ressting temporarily
       // updateNote,
     },
     usePagination,
@@ -834,11 +836,7 @@ function Content() {
   const [notes, setNotes] =
     useState<SelectedTrackDetailClip_live_set_view_detail_clip_notes[]>();
   const [skipPageReset, setSkipPageReset] = React.useState(false);
-  // const [selection, setSelection] = useState({});
   const [selection, setSelection] = useState<SelectedRowIds>({});
-  // const [selection, setSelection] = useState<
-  //   UseRowSelectState<{}>["selectedRowIds"]
-  // >({});
   const [notificationMessage, setNotificationMessage] = useState("");
   const [showNotification, setShowNotification] = useState(false);
 
@@ -937,12 +935,13 @@ function Content() {
             columns={columns}
             data={notes}
             // updateNote={updateNote}
-            // skipPageReset={skipPageReset}
+            skipPageReset={skipPageReset}
             setSelection={setSelection}
           />
           <div className="flex gap-4">
             <pre>{JSON.stringify(notes, null, 2)}</pre>
             <pre>{JSON.stringify(data, null, 2)}</pre>
+            <pre>{JSON.stringify(selection, null, 2)}</pre>
           </div>
         </div>
       )}
