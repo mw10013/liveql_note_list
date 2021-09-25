@@ -4,18 +4,18 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: Fire
+// GraphQL mutation operation: FireClip
 // ====================================================
 
-export interface Fire_clip_fire {
+export interface FireClip_clip_fire {
   __typename: "Clip";
   id: number;
 }
 
-export interface Fire {
-  clip_fire: Fire_clip_fire | null;
+export interface FireClip {
+  clip_fire: FireClip_clip_fire | null;
 }
 
-export interface FireVariables {
+export interface FireClipVariables {
   id: number;
 }

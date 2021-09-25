@@ -13,12 +13,16 @@ import {
   InMemoryCache,
   ApolloProvider,
   useLazyQuery,
+  useMutation,
   gql,
 } from "@apollo/client";
 import {
   SelectedTrackDetailClip,
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
+import { FireClip, FireClipVariables } from "./__generated__/FireClip";
+import { StartSong, StartSongVariables } from "./__generated__/StartSong";
+import { StopSong, StopSongVariables } from "./__generated__/StopSong";
 import update from "immutability-helper";
 import {
   useTable,
@@ -162,86 +166,59 @@ const GET_SELECTED_TRACK_DETAIL_CLIP = gql`
     }
   }
 `;
-/*
+
 // HACK: time_span is magic constant.
-function mutateReplaceAllNotes(variables) {
-  return request(
-    liveqlEndpoint,
-    gql`
-      mutation ReplaceAllNotes(
-        $id: Int!
-        $notesDictionary: NotesDictionaryInput!
-      ) {
-        clip_remove_notes_extended(
-          id: $id
-          from_pitch: 0
-          pitch_span: 128
-          from_time: 0
-          time_span: 1000000
-        ) {
-          id
-        }
-        clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
-          id
-          name
-          notes {
-            start_time
-            pitch
-            velocity
-            duration
-            probability
-            velocity_deviation
-            note_id
-          }
-        }
+const REPLACE_ALL_NOTES = gql`
+  mutation ReplaceAllNotes($id: Int!, $notesDictionary: NotesDictionaryInput!) {
+    clip_remove_notes_extended(
+      id: $id
+      from_pitch: 0
+      pitch_span: 128
+      from_time: 0
+      time_span: 1000000
+    ) {
+      id
+    }
+    clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
+      id
+      name
+      notes {
+        start_time
+        pitch
+        velocity
+        duration
+        probability
+        velocity_deviation
+        note_id
       }
-    `,
-    variables
-  );
-}
+    }
+  }
+`;
 
-function mutateStart(variables) {
-  return request(
-    liveqlEndpoint,
-    gql`
-      mutation StartSong($id: Int!) {
-        song_start_playing(id: $id) {
-          id
-        }
-      }
-    `,
-    variables
-  );
-}
+const FIRE_CLIP = gql`
+  mutation FireClip($id: Int!) {
+    clip_fire(id: $id) {
+      id
+    }
+  }
+`;
 
-function mutateStop(variables) {
-  return request(
-    liveqlEndpoint,
-    gql`
-      mutation StopSong($id: Int!) {
-        song_stop_playing(id: $id) {
-          id
-        }
-      }
-    `,
-    variables
-  );
-}
+const START_SONG = gql`
+  mutation StartSong($id: Int!) {
+    song_start_playing(id: $id) {
+      id
+    }
+  }
+`;
 
-function mutateFire(variables) {
-  return request(
-    liveqlEndpoint,
-    gql`
-      mutation Fire($id: Int!) {
-        clip_fire(id: $id) {
-          id
-        }
-      }
-    `,
-    variables
-  );
-}
-*/
+const STOP_SONG = gql`
+  mutation StopSong($id: Int!) {
+    song_stop_playing(id: $id) {
+      id
+    }
+  }
+`;
+
 const cellConfig = {
   start_time: {
     type: "number",
@@ -906,15 +883,16 @@ function Content() {
       onError: onApolloError,
     }
   );
+
+  const [fireClip] = useMutation<FireClip, FireClipVariables>(FIRE_CLIP, {
+    onError: onApolloError,
+  });
+
+  const [startSong] = useMutation(START_SONG, { onError: onApolloError });
+  const [stopSong] = useMutation(STOP_SONG, { onError: onApolloError });
+
   /*
   const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes, {
-    onError: onReactQueryError,
-  });
-  const mutationFire = useMutation(mutateFire, { onError: onReactQueryError });
-  const mutatationStart = useMutation(mutateStart, {
-    onError: onReactQueryError,
-  });
-  const mutatationStop = useMutation(mutateStop, {
     onError: onReactQueryError,
   });
 */
@@ -946,6 +924,65 @@ function Content() {
       </div>
       {data && notes && (
         <div>
+          <div className="mt-2 flex gap-4">
+            <Button
+              onClick={() => {
+                // mutationReplaceAllNotes.mutate({
+                //   id: data.live_set.view.detail_clip.id,
+                //   notesDictionary: {
+                //     notes: notes.map(({ note_id, ...n }) => n),
+                //   },
+                // });
+              }}
+            >
+              Save
+            </Button>
+            <ButtonGroup
+              left={{
+                onClick: () => {
+                  if (data.live_set.view.detail_clip?.id) {
+                    fireClip({
+                      variables: {
+                        id: data.live_set.view.detail_clip.id,
+                      },
+                    });
+                  }
+                },
+                children: "Fire",
+              }}
+              middle={{
+                onClick: () =>
+                  startSong({
+                    variables: {
+                      id: data.live_set.id,
+                    },
+                  }),
+                children: "Start",
+              }}
+              right={{
+                onClick: () =>
+                  stopSong({
+                    variables: {
+                      id: data.live_set.id,
+                    },
+                  }),
+                children: "Stop",
+              }}
+            />
+            <Button
+              disabled={Object.keys(selection).length === 0}
+              // onClick={() => {
+              //   applyToNotes((notes) => {
+              //     return notes.filter(
+              //       (el, index) => !selection.hasOwnProperty(index)
+              //     );
+              //   });
+              // }}
+            >
+              Delete
+            </Button>
+          </div>
+
           <Table
             columns={columns}
             data={notes}
