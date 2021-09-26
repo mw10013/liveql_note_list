@@ -43,6 +43,9 @@ import {
 // TODO: disclosure box, table; dupes, pagination reset
 
 type UpdateNoteFn = (rowIndex: number, columnId: string, value: number) => void;
+type InsertNotesFn = (
+  notes: SelectedTrackDetailClip_live_set_view_detail_clip_notes[]
+) => void;
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -638,8 +641,11 @@ function InputField({ id, label, ...props }: InputFieldProps) {
   );
 }
 
-/*
-function InputSection({ insertNotes }) {
+interface InputSectionProps {
+  insertNotes: InsertNotesFn;
+}
+
+function InputSection({ insertNotes }: InputSectionProps) {
   const [commitedValues, setCommitedValues] = useState({
     ...DEFAULT_NOTE,
     step: 1,
@@ -649,6 +655,8 @@ function InputSection({ insertNotes }) {
   const insert = () =>
     insertNotes([
       {
+        __typename: "Note",
+        note_id: 0,
         ...DEFAULT_NOTE,
         start_time: values.start_time,
         pitch: values.pitch,
@@ -674,9 +682,9 @@ function InputSection({ insertNotes }) {
   const onFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
   const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const config = cellConfig[e.target.name];
+    const config = cellConfig[e.target.name as keyof typeof cellConfig];
     const value = sanitizeValue(
-      values[e.target.name],
+      values[e.target.name as keyof typeof values].toString(),
       commitedValues[e.target.name],
       config.type,
       config.minValue,
@@ -752,7 +760,7 @@ function InputSection({ insertNotes }) {
     </Disclosure>
   );
 }
-*/
+
 interface NotificationProps {
   message: string;
   show: boolean;
@@ -861,11 +869,17 @@ function Content() {
       old ? update(old, { $apply: fn }).sort(compareNotes) : old
     );
 
-  // const insertNotes = (notes) => {
-  //   setNotes((old) =>
-  //     update(old, { $apply: (arr) => [...notes, ...arr] }).sort(compareNotes)
-  //   );
-  // };
+  const insertNotes: InsertNotesFn = (notes) => {
+    setNotes((old) =>
+      old
+        ? update(old, {
+            $apply: (
+              arr: SelectedTrackDetailClip_live_set_view_detail_clip_notes[]
+            ) => [...notes, ...arr],
+          }).sort(compareNotes)
+        : old
+    );
+  };
 
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
@@ -938,6 +952,8 @@ function Content() {
       </div>
       {data && notes && (
         <div>
+          <InputSection insertNotes={insertNotes} />
+
           <div className="mt-2 flex gap-4">
             <Button
               onClick={() => {
