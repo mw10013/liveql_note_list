@@ -20,6 +20,10 @@ import {
   SelectedTrackDetailClip,
   SelectedTrackDetailClip_live_set_view_detail_clip_notes,
 } from "./__generated__/SelectedTrackDetailClip";
+import {
+  ReplaceAllNotes,
+  ReplaceAllNotesVariables,
+} from "./__generated__/ReplaceAllNotes";
 import { FireClip, FireClipVariables } from "./__generated__/FireClip";
 import { StartSong, StartSongVariables } from "./__generated__/StartSong";
 import { StopSong, StopSongVariables } from "./__generated__/StopSong";
@@ -884,18 +888,22 @@ function Content() {
     }
   );
 
+  const [replaceAllNotes] = useMutation<
+    ReplaceAllNotes,
+    ReplaceAllNotesVariables
+  >(REPLACE_ALL_NOTES, {
+    onError: onApolloError,
+  });
   const [fireClip] = useMutation<FireClip, FireClipVariables>(FIRE_CLIP, {
     onError: onApolloError,
   });
-
-  const [startSong] = useMutation(START_SONG, { onError: onApolloError });
-  const [stopSong] = useMutation(STOP_SONG, { onError: onApolloError });
-
-  /*
-  const mutationReplaceAllNotes = useMutation(mutateReplaceAllNotes, {
-    onError: onReactQueryError,
+  const [startSong] = useMutation<StartSong, StartSongVariables>(START_SONG, {
+    onError: onApolloError,
   });
-*/
+  const [stopSong] = useMutation<StopSong, StopSongVariables>(STOP_SONG, {
+    onError: onApolloError,
+  });
+
   return (
     <>
       <div className="md:flex md:items-center md:justify-between">
@@ -927,12 +935,16 @@ function Content() {
           <div className="mt-2 flex gap-4">
             <Button
               onClick={() => {
-                // mutationReplaceAllNotes.mutate({
-                //   id: data.live_set.view.detail_clip.id,
-                //   notesDictionary: {
-                //     notes: notes.map(({ note_id, ...n }) => n),
-                //   },
-                // });
+                if (data.live_set.view.detail_clip) {
+                  replaceAllNotes({
+                    variables: {
+                      id: data.live_set.view.detail_clip?.id,
+                      notesDictionary: {
+                        notes: notes.map(({ note_id, __typename, ...n }) => n),
+                      },
+                    },
+                  });
+                }
               }}
             >
               Save
