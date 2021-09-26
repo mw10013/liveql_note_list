@@ -852,8 +852,14 @@ function Content() {
     });
   };
 
-  // const applyToNotes = (fn) =>
-  //   setNotes((old) => update(old, { $apply: fn }).sort(compareNotes));
+  const applyToNotes = (
+    fn: (
+      notes: SelectedTrackDetailClip_live_set_view_detail_clip_notes[]
+    ) => SelectedTrackDetailClip_live_set_view_detail_clip_notes[]
+  ) =>
+    setNotes((old) =>
+      old ? update(old, { $apply: fn }).sort(compareNotes) : old
+    );
 
   // const insertNotes = (notes) => {
   //   setNotes((old) =>
@@ -983,13 +989,13 @@ function Content() {
             />
             <Button
               disabled={Object.keys(selection).length === 0}
-              // onClick={() => {
-              //   applyToNotes((notes) => {
-              //     return notes.filter(
-              //       (el, index) => !selection.hasOwnProperty(index)
-              //     );
-              //   });
-              // }}
+              onClick={() => {
+                applyToNotes((notes) => {
+                  return notes.filter(
+                    (el, index) => !selection.hasOwnProperty(index)
+                  );
+                });
+              }}
             >
               Delete
             </Button>
