@@ -9,9 +9,24 @@ import { NotesDictionaryInput } from "./../../__generated__/globalTypes";
 // GraphQL mutation operation: ReplaceAllNotes
 // ====================================================
 
+export interface ReplaceAllNotes_clip_remove_notes_extended_notes {
+  __typename: "Note";
+  start_time: number;
+  pitch: number;
+  velocity: number;
+  duration: number;
+  probability: number;
+  velocity_deviation: number;
+  release_velocity: number;
+  mute: number;
+  note_id: number;
+}
+
 export interface ReplaceAllNotes_clip_remove_notes_extended {
   __typename: "Clip";
   id: number;
+  name: string;
+  notes: ReplaceAllNotes_clip_remove_notes_extended_notes[] | null;
 }
 
 export interface ReplaceAllNotes_clip_add_new_notes_notes {
@@ -22,6 +37,8 @@ export interface ReplaceAllNotes_clip_add_new_notes_notes {
   duration: number;
   probability: number;
   velocity_deviation: number;
+  release_velocity: number;
+  mute: number;
   note_id: number;
 }
 

@@ -47,10 +47,6 @@ type InsertNotesFn = (
   notes: SelectedTrackDetailClip_live_set_view_detail_clip_notes[]
 ) => void;
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 const Button = ({
   children,
   disabled,
@@ -185,6 +181,18 @@ const REPLACE_ALL_NOTES = gql`
       time_span: 1000000
     ) {
       id
+      name
+      notes {
+        start_time
+        pitch
+        velocity
+        duration
+        probability
+        velocity_deviation
+        release_velocity
+        mute
+        note_id
+      }
     }
     clip_add_new_notes(id: $id, notes_dictionary: $notesDictionary) {
       id
@@ -196,6 +204,8 @@ const REPLACE_ALL_NOTES = gql`
         duration
         probability
         velocity_deviation
+        release_velocity
+        mute
         note_id
       }
     }
@@ -692,7 +702,7 @@ function InputSection({ insertNotes }: InputSectionProps) {
   const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const config = cellConfig[e.target.name as keyof typeof cellConfig];
     const value = sanitizeValue(
-      values[e.target.name as keyof typeof values].toString(),
+      values[e.target.name as keyof typeof values],
       commitedValues[e.target.name as keyof typeof commitedValues],
       config.type,
       config.minValue,
@@ -712,8 +722,8 @@ function InputSection({ insertNotes }: InputSectionProps) {
     }
   };
 
-  const getFieldProps = (name: string) => ({
-    value: values[name as keyof typeof values],
+  const getFieldProps = (name: keyof typeof values) => ({
+    value: values[name],
     onChange,
     onBlur,
     onFocus,
@@ -897,7 +907,7 @@ function Content() {
     setSkipPageReset(false);
   }, [notes]);
 
-  const [fetch, query] = useLazyQuery<SelectedTrackDetailClip>(
+  const [fetch] = useLazyQuery<SelectedTrackDetailClip>(
     GET_SELECTED_TRACK_DETAIL_CLIP,
     {
       fetchPolicy: "network-only",
