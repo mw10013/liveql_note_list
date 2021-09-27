@@ -262,13 +262,21 @@ const cellConfig = {
 };
 
 function sanitizeValue(
-  value: string,
+  value: string | number,
   defaultValue: number,
   type: string,
   minValue: number,
   maxValue?: number
 ) {
-  let v = type === "integer" ? parseInt(value) : Number(value);
+  // let v = type === "integer" ? parseInt(value) : Number(value);
+  let v =
+    typeof value === "string"
+      ? type === "integer"
+        ? parseInt(value)
+        : Number(value)
+      : type === "integer"
+      ? Math.round(value)
+      : value;
   if (isNaN(v)) {
     return defaultValue;
   }
@@ -685,10 +693,10 @@ function InputSection({ insertNotes }: InputSectionProps) {
     const config = cellConfig[e.target.name as keyof typeof cellConfig];
     const value = sanitizeValue(
       values[e.target.name as keyof typeof values].toString(),
-      commitedValues[e.target.name],
+      commitedValues[e.target.name as keyof typeof commitedValues],
       config.type,
       config.minValue,
-      config.maxValue
+      "maxValue" in config ? config.maxValue : undefined
     );
     setValues((old) => ({ ...old, [e.target.name]: value }));
     setCommitedValues((old) => ({ ...old, [e.target.name]: value }));
@@ -698,13 +706,14 @@ function InputSection({ insertNotes }: InputSectionProps) {
     if (e.key === "Escape") {
       setValues((old) => ({
         ...old,
-        [e.target.name]: commitedValues[e.target.name],
+        [e.currentTarget.name]:
+          commitedValues[e.currentTarget.name as keyof typeof commitedValues],
       }));
     }
   };
 
   const getFieldProps = (name: string) => ({
-    value: values[name],
+    value: values[name as keyof typeof values],
     onChange,
     onBlur,
     onFocus,
