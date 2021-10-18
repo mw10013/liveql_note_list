@@ -13,4 +13,6 @@ test("fetch clip", async () => {
   const save = await screen.findByRole("button", { name: /save/i });
   expect(save).toBeInTheDocument();
   // screen.debug();
+
+  expect(screen.queryAllByRole("row")).toHaveLength(4);
 });
