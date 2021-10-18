@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 
@@ -14,5 +14,13 @@ test("fetch clip", async () => {
   expect(save).toBeInTheDocument();
   // screen.debug();
 
-  expect(screen.queryAllByRole("row")).toHaveLength(4);
+  const table = screen.getByRole("table");
+  expect(screen.getByRole("table")).toBeInTheDocument();
+  expect(within(table).queryAllByRole("row")).toHaveLength(4);
+
+  const [columnNames, ...rows] = within(table).getAllByRole("rowgroup");
+  console.log(columnNames[0]);
+  // within(columnNames).getByText("id")
+  // within(columnNames).getByText("firstName")
+  // within(columnNames).getByText("lastName")
 });
