@@ -22,26 +22,21 @@ test("fetch clip", async () => {
   expect(columnHeaderRow).toBeInTheDocument();
   expect(rows).toHaveLength(3);
 
-  const startHeader = within(columnHeaderRow).getByRole("columnheader", {
-    name: /start/i,
-  });
-
   // screen.debug(table);
   // screen.debug(columnHeaderRow);
-  screen.debug(startHeader);
-  // console.log(startHeader);
-  const { cellIndex, tagName, nodeName } = startHeader;
-  console.log({ cellIndex, tagName, nodeName });
+  // screen.debug(startHeader);
 
-  /* https://polvara.me/posts/five-things-you-didnt-know-about-testing-library
-  values.forEach(([id, fruit]) => {
-    const row = screen.getByText(id).closest("tr");
-    // highlight-start
-    const utils = within(row);
-    expect(utils.getByText(id)).toBeInTheDocument();
-    expect(utils.getByText(fruit)).toBeInTheDocument();
-    */
-  // within(columnNames).getByText("id")
-  // within(columnNames).getByText("firstName")
-  // within(columnNames).getByText("lastName")
+  const colIndexes = [
+    ["start_time", /start/i],
+    ["pitch", /pitch/i],
+    ["velocity", /velocity$/i],
+    ["duration", /dur/i],
+  ].reduce((acc, [key, regex]) => {
+    const header = within(columnHeaderRow).getByRole("columnheader", {
+      name: regex,
+    });
+    expect(header).toBeInTheDocument();
+    return { ...acc, [key]: header.cellIndex };
+  }, {});
+  console.log(colIndexes);
 });
