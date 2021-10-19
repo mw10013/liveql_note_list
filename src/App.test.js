@@ -14,12 +14,33 @@ test("fetch clip", async () => {
   expect(save).toBeInTheDocument();
   // screen.debug();
 
-  const table = screen.getByRole("table");
-  expect(screen.getByRole("table")).toBeInTheDocument();
-  expect(within(table).queryAllByRole("row")).toHaveLength(4);
+  const table = screen
+    .getByRole("columnheader", { name: /pitch/i })
+    .closest("table");
+  expect(table).toBeInTheDocument();
+  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
+  expect(columnHeaderRow).toBeInTheDocument();
+  expect(rows).toHaveLength(3);
 
-  const [columnNames, ...rows] = within(table).getAllByRole("rowgroup");
-  console.log(columnNames[0]);
+  const startHeader = within(columnHeaderRow).getByRole("columnheader", {
+    name: /start/i,
+  });
+
+  // screen.debug(table);
+  // screen.debug(columnHeaderRow);
+  screen.debug(startHeader);
+  // console.log(startHeader);
+  const { cellIndex, tagName, nodeName } = startHeader;
+  console.log({ cellIndex, tagName, nodeName });
+
+  /* https://polvara.me/posts/five-things-you-didnt-know-about-testing-library
+  values.forEach(([id, fruit]) => {
+    const row = screen.getByText(id).closest("tr");
+    // highlight-start
+    const utils = within(row);
+    expect(utils.getByText(id)).toBeInTheDocument();
+    expect(utils.getByText(fruit)).toBeInTheDocument();
+    */
   // within(columnNames).getByText("id")
   // within(columnNames).getByText("firstName")
   // within(columnNames).getByText("lastName")
