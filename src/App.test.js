@@ -40,7 +40,11 @@ test("fetch and display", async () => {
     for (const [key, cellIndex] of Object.entries(colIndexes)) {
       const cell = rows[index].cells[cellIndex];
       const textbox = within(cell).getByRole("textbox");
-      expect(Number(textbox.value)).toEqual(notes[index][key]);
+      expect({ index, key, value: Number(textbox.value) }).toEqual({
+        index,
+        key,
+        value: notes[index][key],
+      });
     }
   });
 });
