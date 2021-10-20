@@ -1,10 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
+import { selectedTrackDetailClipData } from "./mocks/handlers";
 
-// jest.setTimeout(10_000);
-
-test("fetch clip", async () => {
+test("fetch and display", async () => {
   render(<App />);
   const fetch = screen.getByRole("button", { name: /fetch/i });
   expect(fetch).toBeInTheDocument();
@@ -12,7 +11,6 @@ test("fetch clip", async () => {
   userEvent.click(fetch);
   const save = await screen.findByRole("button", { name: /save/i });
   expect(save).toBeInTheDocument();
-  // screen.debug();
 
   const table = screen
     .getByRole("columnheader", { name: /pitch/i })
@@ -20,12 +18,8 @@ test("fetch clip", async () => {
   expect(table).toBeInTheDocument();
   const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
   expect(columnHeaderRow).toBeInTheDocument();
-  expect(rows).toHaveLength(3);
 
-  // screen.debug(table);
-  // screen.debug(columnHeaderRow);
-  // screen.debug(startHeader);
-
+  // same keys as note.
   const colIndexes = [
     ["start_time", /start/i],
     ["pitch", /pitch/i],
@@ -38,5 +32,15 @@ test("fetch clip", async () => {
     expect(header).toBeInTheDocument();
     return { ...acc, [key]: header.cellIndex };
   }, {});
-  console.log(colIndexes);
+
+  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  expect(rows).toHaveLength(notes.length);
+
+  notes.forEach((note, index) => {
+    for (const [key, cellIndex] of Object.entries(colIndexes)) {
+      const cell = rows[index].cells[cellIndex];
+      const textbox = within(cell).getByRole("textbox");
+      expect(Number(textbox.value)).toEqual(notes[index][key]);
+    }
+  });
 });
