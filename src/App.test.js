@@ -77,18 +77,36 @@ test("fetch and edit", async () => {
     return { ...acc, [key]: header.cellIndex };
   }, {});
 
-  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
-  expect(rows).toHaveLength(notes.length);
+  const pitchInput = within(rows[0].cells[colIndexes.pitch]).getByRole(
+    "textbox"
+  );
+  userEvent.type(pitchInput, "-1");
+  userEvent.tab();
+  expect(pitchInput).toHaveDisplayValue("0");
 
-  notes.forEach((note, index) => {
-    for (const [key, cellIndex] of Object.entries(colIndexes)) {
-      const cell = rows[index].cells[cellIndex];
-      const textbox = within(cell).getByRole("textbox");
-      expect({ index, key, value: Number(textbox.value) }).toEqual({
-        index,
-        key,
-        value: notes[index][key],
-      });
-    }
-  });
+  userEvent.type(pitchInput, "128");
+  userEvent.tab();
+  expect(pitchInput).toHaveDisplayValue("127");
+
+  userEvent.type(pitchInput, "99");
+  userEvent.tab();
+  expect(pitchInput).toHaveDisplayValue("99");
+
+  const startTimeInput = within(rows[0].cells[colIndexes.start_time]).getByRole(
+    "textbox"
+  );
+  userEvent.type(startTimeInput, "-1");
+  userEvent.tab();
+  expect(startTimeInput).toHaveDisplayValue("0");
+
+  const lastStartTimeInput = within(
+    rows[rows.length - 1].cells[colIndexes.start_time]
+  ).getByRole("textbox");
+  const lastStartTimeOld = Number(lastStartTimeInput.value);
+  const lastStartTimeNewDisplayValue = String(lastStartTimeOld + 1);
+
+  userEvent.type(startTimeInput, lastStartTimeNewDisplayValue);
+  userEvent.tab();
+  expect(startTimeInput).not.toHaveDisplayValue(lastStartTimeNewDisplayValue);
+  expect(lastStartTimeInput).toHaveDisplayValue(lastStartTimeNewDisplayValue);
 });
