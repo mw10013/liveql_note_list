@@ -111,7 +111,7 @@ test("fetch and edit", async () => {
   expect(lastStartTimeInput).toHaveDisplayValue(lastStartTimeNewDisplayValue);
 });
 
-test.only("fetch and delete", async () => {
+test("fetch and delete", async () => {
   render(<App />);
   const fetch = screen.getByRole("button", { name: /fetch/i });
   expect(fetch).toBeInTheDocument();
@@ -145,7 +145,14 @@ test.only("fetch and delete", async () => {
   expect(deleteButton).toBeInTheDocument();
   expect(deleteButton).toBeDisabled();
 
-  const toggle = within(rows[1]).getByRole("checkbox");
+  const index = 1;
+  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  const pitchInput = within(rows[index].cells[colIndexes.pitch]).getByRole(
+    "textbox"
+  );
+  expect(pitchInput).toHaveDisplayValue(String(notes[index].pitch));
+
+  const toggle = within(rows[index]).getByRole("checkbox");
   expect(toggle).toBeInTheDocument();
   expect(toggle).not.toBeChecked();
 
@@ -155,10 +162,9 @@ test.only("fetch and delete", async () => {
 
   userEvent.click(deleteButton);
   expect(deleteButton).toBeDisabled();
-
-  expect(rows).toHaveLength(3);
   const [, ...modifiedRows] = within(table).getAllByRole("row");
-  expect(modifiedRows).toHaveLength(2);
+  expect(modifiedRows).toHaveLength(rows.length - 1);
+  expect(pitchInput).toHaveDisplayValue(String(notes[index + 1].pitch));
 
   const toggleAll = within(columnHeaderRow).getByRole("checkbox");
   expect(toggleAll).toBeInTheDocument();
