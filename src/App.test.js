@@ -176,3 +176,57 @@ test("fetch and delete", async () => {
   const [, ...remainingRows] = within(table).getAllByRole("row");
   expect(remainingRows).toHaveLength(0);
 });
+
+test.only("fetch and insert", async () => {
+  render(<App />);
+  const fetch = screen.getByRole("button", { name: /fetch/i });
+  expect(fetch).toBeInTheDocument();
+
+  userEvent.click(fetch);
+  const save = await screen.findByRole("button", { name: /save/i });
+  expect(save).toBeInTheDocument();
+
+  const table = screen
+    .getByRole("columnheader", { name: /pitch/i })
+    .closest("table");
+  expect(table).toBeInTheDocument();
+  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
+  expect(columnHeaderRow).toBeInTheDocument();
+
+  // same keys as note.
+  const colIndexes = [
+    ["start_time", /start/i],
+    ["pitch", /pitch/i],
+    ["velocity", /velocity$/i],
+    ["duration", /dur/i],
+  ].reduce((acc, [key, regex]) => {
+    const header = within(columnHeaderRow).getByRole("columnheader", {
+      name: regex,
+    });
+    expect(header).toBeInTheDocument();
+    return { ...acc, [key]: header.cellIndex };
+  }, {});
+
+  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  expect(rows).toHaveLength(notes.length);
+
+  const insertNoteToggle = screen.getByRole("button", { name: /insert/i });
+  expect(insertNoteToggle).toBeInTheDocument();
+  userEvent.click(insertNoteToggle);
+  // screen.debug(insertNoteToggle);
+  // screen.debug();
+
+  const startInput = screen.getByLabelText(/start/i);
+  const pitchInput = screen.getByLabelText(/pitch/i);
+  const velocityInput = screen.getByLabelText(/velocity/i);
+  const durationInput = screen.getByLabelText(/duration/i);
+  const stepInput = screen.getByLabelText(/step/i);
+  // screen.debug(stepInput);
+
+  const insertButton = screen.getByRole("button", { name: /^insert$/i });
+  const insertAndStepButton = screen.getByRole("button", {
+    name: /^insert.+step$/i,
+  });
+  const stepButton = screen.getByRole("button", { name: /^step$/i });
+  screen.debug(insertAndStepButton);
+});
