@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { selectedTrackDetailClipData } from "./mocks/handlers";
@@ -177,7 +177,7 @@ test("fetch and delete", async () => {
   expect(remainingRows).toHaveLength(0);
 });
 
-test.only("fetch and insert", async () => {
+test("fetch and insert", async () => {
   render(<App />);
   const fetch = screen.getByRole("button", { name: /fetch/i });
   expect(fetch).toBeInTheDocument();
@@ -213,20 +213,53 @@ test.only("fetch and insert", async () => {
   const insertNoteToggle = screen.getByRole("button", { name: /insert/i });
   expect(insertNoteToggle).toBeInTheDocument();
   userEvent.click(insertNoteToggle);
-  // screen.debug(insertNoteToggle);
-  // screen.debug();
 
+  const initialStartInputDisplayValue = "0";
   const startInput = screen.getByLabelText(/start/i);
-  const pitchInput = screen.getByLabelText(/pitch/i);
-  const velocityInput = screen.getByLabelText(/velocity/i);
-  const durationInput = screen.getByLabelText(/duration/i);
-  const stepInput = screen.getByLabelText(/step/i);
-  // screen.debug(stepInput);
+  expect(startInput).toHaveDisplayValue(initialStartInputDisplayValue);
 
-  const insertButton = screen.getByRole("button", { name: /^insert$/i });
-  const insertAndStepButton = screen.getByRole("button", {
-    name: /^insert.+step$/i,
-  });
-  const stepButton = screen.getByRole("button", { name: /^step$/i });
-  screen.debug(insertAndStepButton);
+  // Insert note at start 0 with pitch 1 less than the first note so sorted first.
+  const pitchDisplayValue = String(notes[0].pitch - 1);
+  const pitchInput = screen.getByLabelText(/pitch/i);
+  userEvent.click(pitchInput);
+  userEvent.paste(pitchInput, pitchDisplayValue); // type seems not to work correctly.
+  userEvent.tab();
+  expect(pitchInput).toHaveDisplayValue(pitchDisplayValue);
+
+  userEvent.click(screen.getByRole("button", { name: /^insert$/i }));
+  expect(startInput).toHaveDisplayValue(initialStartInputDisplayValue);
+  const [, ...rowsAfterInsert] = within(table).getAllByRole("row");
+  expect(rowsAfterInsert).toHaveLength(rows.length + 1);
+  const pitchTableInput = within(
+    rowsAfterInsert[0].cells[colIndexes.pitch]
+  ).getByRole("textbox");
+  expect(pitchTableInput).toHaveDisplayValue(pitchDisplayValue);
+
+  // Step start up by the last notes start time + 1
+  const stepValue = notes[notes.length - 1].start_time + 1;
+  const stepDisplayValue = String(stepValue);
+  const stepInput = screen.getByLabelText(/step/i);
+  userEvent.click(stepInput);
+  userEvent.paste(stepInput, stepDisplayValue);
+  userEvent.tab();
+  expect(stepInput).toHaveDisplayValue(stepDisplayValue);
+
+  userEvent.click(screen.getByRole("button", { name: /^step$/i }));
+  expect(startInput).toHaveDisplayValue(stepDisplayValue);
+
+  // Insert and step
+  userEvent.click(
+    screen.getByRole("button", {
+      name: /^insert.+step$/i,
+    })
+  );
+  const [, ...rowsAfterInsertAndStep] = within(table).getAllByRole("row");
+  expect(rowsAfterInsertAndStep).toHaveLength(rowsAfterInsert.length + 1);
+  const startTableInput = within(
+    rowsAfterInsertAndStep[rowsAfterInsertAndStep.length - 1].cells[
+      colIndexes.start_time
+    ]
+  ).getByRole("textbox");
+  expect(startTableInput).toHaveDisplayValue(stepDisplayValue);
+  expect(startInput).toHaveDisplayValue(String(stepValue * 2));
 });
