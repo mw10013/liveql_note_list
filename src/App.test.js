@@ -1,6 +1,8 @@
-import { render, screen, within, act } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { graphql } from "msw";
 import App from "./App";
+import { server } from "./mocks/server";
 import { selectedTrackDetailClipData } from "./mocks/handlers";
 
 test("fetch and display", async () => {
@@ -262,4 +264,115 @@ test("fetch and insert", async () => {
   ).getByRole("textbox");
   expect(startTableInput).toHaveDisplayValue(stepDisplayValue);
   expect(startInput).toHaveDisplayValue(String(stepValue * 2));
+});
+
+test("fetch, edit, and save", async () => {
+  render(<App />);
+  const fetch = screen.getByRole("button", { name: /fetch/i });
+  expect(fetch).toBeInTheDocument();
+
+  userEvent.click(fetch);
+  const save = await screen.findByRole("button", { name: /save/i });
+  expect(save).toBeInTheDocument();
+
+  const table = screen
+    .getByRole("columnheader", { name: /pitch/i })
+    .closest("table");
+  expect(table).toBeInTheDocument();
+  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
+  expect(columnHeaderRow).toBeInTheDocument();
+
+  // same keys as note.
+  const colIndexes = [
+    ["start_time", /start/i],
+    ["pitch", /pitch/i],
+    ["velocity", /velocity$/i],
+    ["duration", /dur/i],
+  ].reduce((acc, [key, regex]) => {
+    const header = within(columnHeaderRow).getByRole("columnheader", {
+      name: regex,
+    });
+    expect(header).toBeInTheDocument();
+    return { ...acc, [key]: header.cellIndex };
+  }, {});
+
+  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  expect(rows).toHaveLength(notes.length);
+
+  let resolve;
+  const promise = new Promise((r) => {
+    resolve = r;
+  });
+  server.use(
+    graphql.mutation("ReplaceAllNotes", (req, res, ctx) => {
+      const { id } = req.variables;
+      resolve(req.variables);
+      return res(
+        ctx.data({
+          clip_remove_notes_extended: {
+            id: id,
+            name: "",
+            notes: [],
+            __typename: "Clip",
+          },
+          clip_add_new_notes: {
+            id: id,
+            name: "",
+            notes: [
+              {
+                __typename: "Note",
+                duration: 0.25,
+                mute: 0,
+                note_id: 99,
+                pitch: 59,
+                probability: 1,
+                release_velocity: 64,
+                start_time: 0,
+                velocity: 100,
+                velocity_deviation: 0,
+              },
+              {
+                __typename: "Note",
+                duration: 0.25,
+                mute: 0,
+                note_id: 100,
+                pitch: 64,
+                probability: 1,
+                release_velocity: 64,
+                start_time: 1,
+                velocity: 100,
+                velocity_deviation: 0,
+              },
+              {
+                __typename: "Note",
+                duration: 0.25,
+                mute: 0,
+                note_id: 101,
+                pitch: 67,
+                probability: 1,
+                release_velocity: 64,
+                start_time: 1.5,
+                velocity: 100,
+                velocity_deviation: 0,
+              },
+            ],
+            __typename: "Clip",
+          },
+        })
+      );
+    })
+  );
+
+  const pitch = notes[0].pitch - 1;
+  const pitchInput = within(rows[0].cells[colIndexes.pitch]).getByRole(
+    "textbox"
+  );
+  userEvent.type(pitchInput, pitch.toString());
+  userEvent.tab();
+  expect(pitchInput).toHaveDisplayValue(pitch.toString());
+
+  userEvent.click(screen.getByRole("button", { name: /save/i }));
+  const { id, notesDictionary } = await promise;
+  expect(id).toBe(selectedTrackDetailClipData.live_set.view.detail_clip.id);
+  expect(notesDictionary.notes[0].pitch).toBe(pitch);
 });
