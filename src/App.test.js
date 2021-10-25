@@ -5,21 +5,16 @@ import App from "./App";
 import { server } from "./mocks/server";
 import { selectedTrackDetailClipData } from "./mocks/handlers";
 
-test("fetch and display", async () => {
+async function setup() {
   render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
 
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
+  userEvent.click(screen.getByRole("button", { name: /fetch/i }));
+  await screen.findByRole("button", { name: /save/i });
 
   const table = screen
     .getByRole("columnheader", { name: /pitch/i })
     .closest("table");
-  expect(table).toBeInTheDocument();
   const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
 
   // same keys as note.
   const colIndexes = [
@@ -31,13 +26,16 @@ test("fetch and display", async () => {
     const header = within(columnHeaderRow).getByRole("columnheader", {
       name: regex,
     });
-    expect(header).toBeInTheDocument();
     return { ...acc, [key]: header.cellIndex };
   }, {});
 
   const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
   expect(rows).toHaveLength(notes.length);
+  return { table, colIndexes, columnHeaderRow, rows, notes };
+}
 
+test("fetch and display", async () => {
+  const { colIndexes, rows, notes } = await setup();
   notes.forEach((note, index) => {
     for (const [key, cellIndex] of Object.entries(colIndexes)) {
       const cell = rows[index].cells[cellIndex];
@@ -50,34 +48,7 @@ test("fetch and display", async () => {
 });
 
 test("fetch and edit", async () => {
-  render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
-
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
-
-  const table = screen
-    .getByRole("columnheader", { name: /pitch/i })
-    .closest("table");
-  expect(table).toBeInTheDocument();
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
-
-  // same keys as note.
-  const colIndexes = [
-    ["start_time", /start/i],
-    ["pitch", /pitch/i],
-    ["velocity", /velocity$/i],
-    ["duration", /dur/i],
-  ].reduce((acc, [key, regex]) => {
-    const header = within(columnHeaderRow).getByRole("columnheader", {
-      name: regex,
-    });
-    expect(header).toBeInTheDocument();
-    return { ...acc, [key]: header.cellIndex };
-  }, {});
+  const { colIndexes, rows } = await setup();
 
   const pitchInput = within(rows[0].cells[colIndexes.pitch]).getByRole(
     "textbox"
@@ -114,48 +85,18 @@ test("fetch and edit", async () => {
 });
 
 test("fetch and delete", async () => {
-  render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
-
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
-
-  const table = screen
-    .getByRole("columnheader", { name: /pitch/i })
-    .closest("table");
-  expect(table).toBeInTheDocument();
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
-
-  // same keys as note.
-  const colIndexes = [
-    ["start_time", /start/i],
-    ["pitch", /pitch/i],
-    ["velocity", /velocity$/i],
-    ["duration", /dur/i],
-  ].reduce((acc, [key, regex]) => {
-    const header = within(columnHeaderRow).getByRole("columnheader", {
-      name: regex,
-    });
-    expect(header).toBeInTheDocument();
-    return { ...acc, [key]: header.cellIndex };
-  }, {});
+  const { table, colIndexes, columnHeaderRow, rows, notes } = await setup();
 
   const deleteButton = screen.getByRole("button", { name: /delete/i });
-  expect(deleteButton).toBeInTheDocument();
   expect(deleteButton).toBeDisabled();
 
   const index = 1;
-  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
   const pitchInput = within(rows[index].cells[colIndexes.pitch]).getByRole(
     "textbox"
   );
   expect(pitchInput).toHaveDisplayValue(String(notes[index].pitch));
 
   const toggle = within(rows[index]).getByRole("checkbox");
-  expect(toggle).toBeInTheDocument();
   expect(toggle).not.toBeChecked();
 
   userEvent.click(toggle);
@@ -169,7 +110,6 @@ test("fetch and delete", async () => {
   expect(pitchInput).toHaveDisplayValue(String(notes[index + 1].pitch));
 
   const toggleAll = within(columnHeaderRow).getByRole("checkbox");
-  expect(toggleAll).toBeInTheDocument();
   userEvent.click(toggleAll);
   expect(deleteButton).toBeEnabled();
 
@@ -180,40 +120,9 @@ test("fetch and delete", async () => {
 });
 
 test("fetch and insert", async () => {
-  render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
-
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
-
-  const table = screen
-    .getByRole("columnheader", { name: /pitch/i })
-    .closest("table");
-  expect(table).toBeInTheDocument();
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
-
-  // same keys as note.
-  const colIndexes = [
-    ["start_time", /start/i],
-    ["pitch", /pitch/i],
-    ["velocity", /velocity$/i],
-    ["duration", /dur/i],
-  ].reduce((acc, [key, regex]) => {
-    const header = within(columnHeaderRow).getByRole("columnheader", {
-      name: regex,
-    });
-    expect(header).toBeInTheDocument();
-    return { ...acc, [key]: header.cellIndex };
-  }, {});
-
-  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
-  expect(rows).toHaveLength(notes.length);
+  const { table, colIndexes, rows, notes } = await setup();
 
   const insertNoteToggle = screen.getByRole("button", { name: /insert/i });
-  expect(insertNoteToggle).toBeInTheDocument();
   userEvent.click(insertNoteToggle);
 
   const initialStartInputDisplayValue = "0";
@@ -267,37 +176,7 @@ test("fetch and insert", async () => {
 });
 
 test("fetch, edit, save", async () => {
-  render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
-
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
-
-  const table = screen
-    .getByRole("columnheader", { name: /pitch/i })
-    .closest("table");
-  expect(table).toBeInTheDocument();
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
-
-  // same keys as note.
-  const colIndexes = [
-    ["start_time", /start/i],
-    ["pitch", /pitch/i],
-    ["velocity", /velocity$/i],
-    ["duration", /dur/i],
-  ].reduce((acc, [key, regex]) => {
-    const header = within(columnHeaderRow).getByRole("columnheader", {
-      name: regex,
-    });
-    expect(header).toBeInTheDocument();
-    return { ...acc, [key]: header.cellIndex };
-  }, {});
-
-  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
-  expect(rows).toHaveLength(notes.length);
+  const { colIndexes, rows, notes } = await setup();
 
   let resolve;
   const promise = new Promise((r) => {
@@ -378,37 +257,7 @@ test("fetch, edit, save", async () => {
 });
 
 test("fetch, save, error", async () => {
-  render(<App />);
-  const fetch = screen.getByRole("button", { name: /fetch/i });
-  expect(fetch).toBeInTheDocument();
-
-  userEvent.click(fetch);
-  const save = await screen.findByRole("button", { name: /save/i });
-  expect(save).toBeInTheDocument();
-
-  const table = screen
-    .getByRole("columnheader", { name: /pitch/i })
-    .closest("table");
-  expect(table).toBeInTheDocument();
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
-  expect(columnHeaderRow).toBeInTheDocument();
-
-  // same keys as note.
-  const colIndexes = [
-    ["start_time", /start/i],
-    ["pitch", /pitch/i],
-    ["velocity", /velocity$/i],
-    ["duration", /dur/i],
-  ].reduce((acc, [key, regex]) => {
-    const header = within(columnHeaderRow).getByRole("columnheader", {
-      name: regex,
-    });
-    expect(header).toBeInTheDocument();
-    return { ...acc, [key]: header.cellIndex };
-  }, {});
-
-  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
-  expect(rows).toHaveLength(notes.length);
+  await setup();
 
   server.use(
     graphql.mutation("ReplaceAllNotes", (req, res, ctx) => {
