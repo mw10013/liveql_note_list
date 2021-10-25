@@ -266,7 +266,7 @@ test("fetch and insert", async () => {
   expect(startInput).toHaveDisplayValue(String(stepValue * 2));
 });
 
-test("fetch, edit, and save", async () => {
+test("fetch, edit, save", async () => {
   render(<App />);
   const fetch = screen.getByRole("button", { name: /fetch/i });
   expect(fetch).toBeInTheDocument();
@@ -375,4 +375,59 @@ test("fetch, edit, and save", async () => {
   const { id, notesDictionary } = await promise;
   expect(id).toBe(selectedTrackDetailClipData.live_set.view.detail_clip.id);
   expect(notesDictionary.notes[0].pitch).toBe(pitch);
+});
+
+test("fetch, save, error", async () => {
+  render(<App />);
+  const fetch = screen.getByRole("button", { name: /fetch/i });
+  expect(fetch).toBeInTheDocument();
+
+  userEvent.click(fetch);
+  const save = await screen.findByRole("button", { name: /save/i });
+  expect(save).toBeInTheDocument();
+
+  const table = screen
+    .getByRole("columnheader", { name: /pitch/i })
+    .closest("table");
+  expect(table).toBeInTheDocument();
+  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
+  expect(columnHeaderRow).toBeInTheDocument();
+
+  // same keys as note.
+  const colIndexes = [
+    ["start_time", /start/i],
+    ["pitch", /pitch/i],
+    ["velocity", /velocity$/i],
+    ["duration", /dur/i],
+  ].reduce((acc, [key, regex]) => {
+    const header = within(columnHeaderRow).getByRole("columnheader", {
+      name: regex,
+    });
+    expect(header).toBeInTheDocument();
+    return { ...acc, [key]: header.cellIndex };
+  }, {});
+
+  const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  expect(rows).toHaveLength(notes.length);
+
+  server.use(
+    graphql.mutation("ReplaceAllNotes", (req, res, ctx) => {
+      return res(
+        ctx.errors([
+          {
+            message: 'Unexpected error value: "Invalid live id or path: 17"',
+            path: ["clip_remove_notes_extended"],
+          },
+          {
+            message: 'Unexpected error value: "Invalid live id or path: 17"',
+            path: ["clip_add_new_notes"],
+          },
+        ])
+      );
+    })
+  );
+
+  userEvent.click(screen.getByRole("button", { name: /save/i }));
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent(/invalid live id/i);
 });
