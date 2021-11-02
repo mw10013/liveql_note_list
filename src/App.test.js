@@ -14,7 +14,12 @@ async function setup() {
   const table = screen
     .getByRole("columnheader", { name: /pitch/i })
     .closest("table");
-  const [columnHeaderRow, ...rows] = within(table).getAllByRole("row");
+  const [tHead, tBody] = within(table).getAllByRole("rowgroup");
+  expect(tHead).toBeInTheDocument();
+  expect(tBody).toBeInTheDocument();
+  const columnHeaderRows = within(tHead).getAllByRole("row");
+  expect(columnHeaderRows).toHaveLength(1);
+  const columnHeaderRow = columnHeaderRows[0];
 
   // same keys as note.
   const colIndexes = [
@@ -30,6 +35,7 @@ async function setup() {
   }, {});
 
   const notes = selectedTrackDetailClipData.live_set.view.detail_clip.notes;
+  const rows = within(tBody).getAllByRole("row");
   expect(rows).toHaveLength(notes.length);
   return { table, colIndexes, columnHeaderRow, rows, notes };
 }
