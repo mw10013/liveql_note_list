@@ -26,9 +26,9 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider craco start",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider craco build",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider craco test",
     "eject": "react-scripts eject",
     "download-schema": "npx apollo client:download-schema --endpoint=http://localhost:4000/ ./src/schema.json",
     "codegen": "npx apollo client:codegen --localSchemaFile=./src/schema.json --target=typescript --tagName=gql"
